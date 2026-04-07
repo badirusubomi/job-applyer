@@ -27,18 +27,29 @@ JOB ASSIST is an editorial-style, high-fidelity dashboard built with **Next.js 1
 
 ## 🚦 Getting Started
 
-1. **Environment Variables**: Create a `.env.local` file with:
-   ```env
-   OPENAI_API_KEY=your_key_here
-   ```
-2. **Install Dependencies**:
-   ```bash
-   npm install
-   ```
-3. **Run Dev Server**:
-   ```bash
-   npm run dev
-   ```
+### 🐳 The Docker Way (Recommended & Seamless)
+
+1.  **Prepare Environment**: 
+    ```bash
+    cp .env-example .env
+    ```
+    (Enter your `OPENAI_API_KEY` or `GEMINI_API_KEY` in `.env` if using cloud providers).
+
+2.  **Launch System**:
+    ```bash
+    docker-compose up --build
+    ```
+    *Note: The system will automatically pull the **Llama 3** model on the first run. This may take a few minutes depending on your internet connection.*
+
+3.  **View in Browser**: Open **[http://localhost:3000](http://localhost:3000)**.
+
+---
+
+### 💻 The Manual Way (Local Dev)
+
+1.  **Setup Env**: `cp .env-example .env.local`
+2.  **Install**: `npm install`
+3.  **Run**: `npm run dev`
 
 ## 📜 Documentation
 

@@ -7,6 +7,9 @@ services:
       - "11434:11434"
     volumes:
       - ollama_storage:/root/.ollama
+    # AUTOMATIC BOOTSTRAP: Pull the model specified in .env on first launch!
+    entrypoint: /bin/sh
+    command: -c "ollama serve & sleep 10 && ollama pull llama3 && wait"
     restart: unless-stopped
 
   # Core Job Automation Application
@@ -17,11 +20,13 @@ services:
       - "3000:3000"
     depends_on:
       - ollama
+    # Automatically import all keys and secrets from the local .env file!
+    env_file:
+      - .env
+    # We can still provide explicit overrides here for Docker-specific networking.
     environment:
-      # Tell the app to look for the LLM container on the Docker network
+      - LOCAL_LLM_URL=http://ollama:11434/v1
       - OLLAMA_BASE_URL=http://ollama:11434
-      # Default to a generic OpenAI endpoint if used externally
-      - OPENAI_API_KEY=${OPENAI_API_KEY:-""}
     restart: always
 
 # Persistent volumes for the LLM models

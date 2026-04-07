@@ -38,7 +38,7 @@ function AssistantContent() {
       else if (data.answers && actions.answers) setActiveTab('answers');
     } catch (err) {
       console.error(err);
-      alert('Failed to generate. Make sure OPENAI_API_KEY is set in your environment.');
+      alert('Failed to generate. Make sure OPENAI_API_KEY is set in your environment.\n' + err);
     } finally {
       setLoading(false);
     }
