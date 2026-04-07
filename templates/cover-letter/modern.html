@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #000;
+            --white: #fff;
+            --accent: #e8fc3b;
+        }
+        * {
+            box-sizing: border-box;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            line-height: 1.6;
+            color: var(--black);
+            margin: 0;
+            padding: 80px;
+            background: var(--white);
+            font-size: 11pt;
+        }
+        .header {
+            margin-bottom: 50px;
+        }
+        h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 36pt;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            line-height: 1;
+            border-bottom: 8px solid var(--black);
+            display: inline-block;
+        }
+        .contact {
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 9pt;
+            letter-spacing: 1px;
+            margin-top: 10px;
+        }
+        .date {
+            margin-bottom: 30px;
+            font-weight: bold;
+        }
+        .recipient {
+            margin-bottom: 40px;
+        }
+        .content {
+            white-space: pre-wrap;
+            text-align: justify;
+        }
+        .signature {
+            margin-top: 50px;
+        }
+        .sign-off {
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .name {
+            font-family: 'Playfair Display', serif;
+            font-size: 18pt;
+            margin-top: 10px;
+            text-transform: uppercase;
+        }
+        @media print {
+            body { padding: 40px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>{{name}}</h1>
+        <div class="contact">
+            {{contact.email}} &bull; {{contact.phone}} &bull; {{contact.location}}
+        </div>
+    </div>
+
+    <div class="date">{{date}}</div>
+
+    <div class="recipient">
+        <strong>TO THE HIRING TEAM AT {{company}}</strong><br>
+        RE: {{role}}
+    </div>
+
+    <div class="content">{{{body}}}</div>
+
+    <div class="signature">
+        <div class="sign-off">SINCERELY,</div>
+        <div class="name">{{name}}</div>
+    </div>
+</body>
+</html>

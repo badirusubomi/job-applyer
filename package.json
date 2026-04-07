@@ -11,12 +11,15 @@
   "dependencies": {
     "@google/genai": "^1.48.0",
     "@playwright/test": "^1.59.1",
+    "@types/mustache": "^4.2.6",
     "better-sqlite3": "^12.8.0",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.7.0",
+    "mustache": "^4.2.0",
     "next": "16.2.2",
     "openai": "^6.33.0",
     "playwright": "^1.59.1",
+    "puppeteer": "^24.40.0",
     "react": "19.2.4",
     "react-dom": "19.2.4"
   },

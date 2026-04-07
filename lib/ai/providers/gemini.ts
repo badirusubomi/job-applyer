@@ -65,7 +65,6 @@ CONSTRAINTS (VERY IMPORTANT):
 - DO NOT fabricate experience
 - DO NOT add new roles not found in the profile
 - ONLY rewrite existing bullet points to better match the job description
-- KEEP formatting consistent (Markdown)
 - KEEP bullet points concise
 
 Profile:
@@ -77,41 +76,91 @@ ${JSON.stringify(jobInfo)}
 Matched Info:
 ${JSON.stringify(matchInfo)}
 
-Output the tailored resume in Markdown.
+Output a structured JSON object for the resume with exactly these keys:
+{
+  "name": "string",
+  "contact": {
+    "email": "string",
+    "phone": "string",
+    "location": "string"
+  },
+  "summary": "string",
+  "skills": ["string"],
+  "experience": [
+    {
+      "title": "string",
+      "company": "string",
+      "startDate": "string",
+      "endDate": "string",
+      "bullets": ["string"]
+    }
+  ],
+  "projects": [
+    {
+      "name": "string",
+      "tech": "string",
+      "bullets": ["string"]
+    }
+  ],
+  "education": [
+    {
+      "institution": "string",
+      "degree": "string",
+      "date": "string"
+    }
+  ]
+}
+
+Return ONLY the JSON. No markdown or explanation.
     `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
+      config: {
+        responseMimeType: 'application/json'
+      }
     });
 
-    return response.text || '';
+    return response.text || '{}';
   },
 
   async generateCoverLetter(profile: string, jobInfo: JobInfo, template: string): Promise<string> {
     const prompt = `
-Generate a tailored cover letter using the following template.
-
-Replace placeholders:
-{{company}} -> ${jobInfo.company || 'the company'}
-{{role}} -> ${jobInfo.role || 'the role'}
-{{custom_paragraph}} -> Write a custom paragraph explaining why the candidate is a great fit based on the Profile.
-
-Template:
-${template}
+Generate a tailored cover letter structured JSON based on the user profile.
 
 Profile:
 ${profile}
 
-Return the completed cover letter in Markdown.
+Job Info:
+${JSON.stringify(jobInfo)}
+
+Output a structured JSON object with exactly these keys:
+{
+  "name": "string",
+  "contact": {
+    "email": "string",
+    "phone": "string",
+    "location": "string"
+  },
+  "date": "string",
+  "company": "string",
+  "role": "string",
+  "body": "string (the actual cover letter content, use triple curly braces in template for HTML safety)"
+}
+
+Return ONLY the JSON.
     `;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash',
       contents: prompt,
+      config: {
+        responseMimeType: 'application/json'
+      }
     });
 
-    return response.text || '';
+    return response.text || '{}';
   },
 
   async generateAnswers(profile: string, jobInfo: JobInfo, questions: string[]): Promise<string> {

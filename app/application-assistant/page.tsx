@@ -44,21 +44,59 @@ function AssistantContent() {
     }
   };
 
-  const handleDownload = () => {
+  const handleDownload = async () => {
     const content = results?.[activeTab];
-    if (!content) return;
+    if (!content || activeTab === 'answers') return;
 
-    const fileName = `${activeTab}_${new Date().getTime()}.md`;
-    const blob = new Blob([content], { type: 'text/markdown' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const resp = await fetch('/api/pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: activeTab === 'resume' ? 'resume' : 'cover-letter',
+          data: JSON.parse(content)
+        })
+      });
+
+      const blob = await resp.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${activeTab}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error('Download failed', err);
+    }
   };
+
+  const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+
+  useEffect(() => {
+    const updatePreview = async () => {
+      if (results?.[activeTab] && activeTab !== 'answers') {
+        try {
+          const resp = await fetch('/api/pdf/preview', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: activeTab === 'resume' ? 'resume' : 'cover-letter',
+              data: JSON.parse(results[activeTab])
+            })
+          });
+          const html = await resp.text();
+          setPreviewHtml(html);
+        } catch (err) {
+          console.error('Preview update failed', err);
+        }
+      } else {
+        setPreviewHtml(null);
+      }
+    };
+    updatePreview();
+  }, [results, activeTab]);
 
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-[#e5e5df] text-black">
@@ -157,30 +195,33 @@ function AssistantContent() {
                   Answers
                 </button>
               )}
-              <button 
-                onClick={handleDownload}
-                className="px-8 py-4 bg-white text-black border-l-4 border-black hover:bg-black hover:text-white transition-colors flex items-center justify-center font-bold text-xs uppercase"
-                title="Download as Markdown"
-              >
-                <Download className="w-4 h-4 mr-2" />
-                EXPORT
-              </button>
+              {(results.resume || results.coverLetter) && (
+                <button 
+                  onClick={handleDownload}
+                  disabled={activeTab === 'answers'}
+                  className="px-8 py-4 bg-[#e8fc3b] text-black border-l-4 border-black hover:bg-black hover:text-[#e8fc3b] transition-colors flex items-center justify-center font-bold text-xs uppercase disabled:opacity-30 disabled:hover:bg-[#e8fc3b] disabled:hover:text-black"
+                  title="Download as PDF"
+                >
+                  <Download className="w-4 h-4 mr-2 stroke-[3]" />
+                  PDF EXPORT
+                </button>
+              )}
             </div>
             
-            <div className="flex-1 p-8 lg:p-16 overflow-y-auto bg-white">
-              {activeTab === 'resume' && (
-                <div className="opacity-100 transition-opacity">
-                  <pre className="whitespace-pre-wrap font-mono text-sm text-black leading-relaxed">{results.resume}</pre>
-                </div>
-              )}
-              {activeTab === 'coverLetter' && (
-                <div className="opacity-100 transition-opacity">
-                  <pre className="whitespace-pre-wrap font-mono text-sm text-black leading-relaxed">{results.coverLetter}</pre>
-                </div>
-              )}
-              {activeTab === 'answers' && (
-                <div className="opacity-100 transition-opacity">
+            <div className="flex-1 p-0 overflow-y-auto bg-white relative">
+              {activeTab !== 'answers' && previewHtml ? (
+                <iframe 
+                  srcDoc={previewHtml} 
+                  className="w-full h-full border-none"
+                  title="PDF Preview"
+                />
+              ) : activeTab === 'answers' ? (
+                <div className="p-8 lg:p-16">
                   <pre className="whitespace-pre-wrap font-mono text-sm text-black leading-relaxed">{results.answers}</pre>
+                </div>
+              ) : (
+                <div className="h-full flex items-center justify-center p-8 bg-[#f4f4f0]/30 font-mono text-xs uppercase tracking-widest text-black/40">
+                  Synthesizing Layout...
                 </div>
               )}
             </div>
