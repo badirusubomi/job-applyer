@@ -1,6 +1,6 @@
 # Use the official Microsoft Playwright image as the base
 # This ensures all browser dependencies (Chromium/Webkit) are available for scraping
-FROM mcr.microsoft.com/playwright:v1.49.1-noble AS base
+FROM mcr.microsoft.com/playwright:v1.59.1-noble AS base
 
 # Set the working directory inside the container
 WORKDIR /app

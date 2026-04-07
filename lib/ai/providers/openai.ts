@@ -3,38 +3,39 @@ import { AIProvider, JobInfo, MatchInfo } from '../types';
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_build' });
 
+const MODEL = 'gpt-4o-mini';
+
 export const OpenAIProvider: AIProvider = {
   async extractJobInfo(description: string): Promise<JobInfo> {
     const prompt = `
 Extract the following information from the job description:
 - role (Job Title)
 - company (Company Name)
-- skills (List of comma-separated core skills)
-- responsibilities (Short summary of primary responsibilities)
+- skills (Array of core technical and soft skills required)
+- responsibilities (One concise paragraph summarizing the primary responsibilities)
 
-Return ONLY a JSON object with keys: role, company, skills, responsibilities.
+Return ONLY a JSON object with keys: role, company, skills (array of strings), responsibilities.
 
 Job Description:
 ${description}
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
     });
 
-    const content = response.choices[0].message.content || '{}';
-    return JSON.parse(content);
+    return JSON.parse(response.choices[0].message.content || '{}');
   },
 
   async matchProfile(profile: string, jobInfo: JobInfo): Promise<MatchInfo> {
     const prompt = `
-Given the user's profile and the extracted job info, determine the most relevant experience and skills from the profile that match the job.
+Given the candidate's profile and extracted job info, identify the most relevant experiences and skills.
 
-Return ONLY a JSON object with keys: 
-- relevant_experience (array of strings, summarizing matching experiences)
-- relevant_skills (array of strings)
+Return ONLY a JSON object with:
+- relevant_experience (array of strings — specific achievements from the profile that map to the role)
+- relevant_skills (array of strings — skills from the profile that directly match what's needed)
 
 Profile:
 ${profile}
@@ -44,35 +45,35 @@ ${JSON.stringify(jobInfo)}
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
     });
 
-    const content = response.choices[0].message.content || '{}';
-    return JSON.parse(content);
+    return JSON.parse(response.choices[0].message.content || '{}');
   },
 
   async generateResume(profile: string, jobInfo: JobInfo, matchInfo: MatchInfo): Promise<string> {
     const prompt = `
-Act as an expert resume writer.
+You are an expert resume strategist. Your job is to rewrite a candidate's resume to be perfectly tailored for a specific role — without inventing anything.
 
-CONSTRAINTS (VERY IMPORTANT):
-- DO NOT fabricate experience
-- DO NOT add new roles not found in the profile
-- ONLY rewrite existing bullet points to better match the job description
-- KEEP bullet points concise
-
-Profile:
+CANDIDATE PROFILE:
 ${profile}
 
-Job Info:
-${JSON.stringify(jobInfo)}
+TARGET ROLE: ${jobInfo.role || 'the role'} at ${jobInfo.company || 'the company'}
+JOB REQUIREMENTS: ${JSON.stringify(jobInfo)}
+MATCHED STRENGTHS: ${JSON.stringify(matchInfo)}
 
-Matched Info:
-${JSON.stringify(matchInfo)}
+RULES:
+- DO NOT fabricate experience, companies, or roles
+- DO NOT use filler corporate-speak ("leveraged", "utilized", "synergized") — write like a real person
+- Rewrite bullet points to quantify impact where evidence of numbers exists in the profile
+- The summary MUST be written specifically for the role of "${jobInfo.role}" — make it targeted, confident, and human
+- Under skillCategories: only include skills actually in the profile that are relevant to this job. Group them logically by category (e.g., "AI & Machine Learning", "DevOps & Cloud", "Languages")
+- Each category should have 3–7 skills maximum
+- Bullet points should start with strong, specific action verbs (built, designed, reduced, shipped) — not vague ones
 
-Output a structured JSON object for the resume with exactly these keys:
+Output a JSON object:
 {
   "name": "string",
   "contact": {
@@ -80,15 +81,20 @@ Output a structured JSON object for the resume with exactly these keys:
     "phone": "string",
     "location": "string"
   },
-  "summary": "string",
-  "skills": ["string"],
+  "summary": "string — 2–3 sentences. Targeted to ${jobInfo.role}. Don't open with 'I am'. Make it punchy and specific.",
+  "skillCategories": [
+    {
+      "category": "string",
+      "skills": ["string"]
+    }
+  ],
   "experience": [
     {
       "title": "string",
       "company": "string",
       "startDate": "string",
       "endDate": "string",
-      "bullets": ["string"]
+      "bullets": ["string — specific, quantified when possible, strong verbs"]
     }
   ],
   "projects": [
@@ -107,11 +113,11 @@ Output a structured JSON object for the resume with exactly these keys:
   ]
 }
 
-Return ONLY the JSON. No markdown or explanation.
+Return ONLY valid JSON. No markdown fences. No explanation.
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
     });
@@ -121,33 +127,41 @@ Return ONLY the JSON. No markdown or explanation.
 
   async generateCoverLetter(profile: string, jobInfo: JobInfo, template: string): Promise<string> {
     const prompt = `
-Generate a tailored cover letter structured JSON based on the user profile.
+You are a writing coach helping a real candidate write an unforgettable cover letter for a ${jobInfo.role || 'role'} position at ${jobInfo.company || 'the company'}.
 
-Profile:
+RULES — CRITICAL:
+- DO NOT open with "I am writing to apply for..." or any variation of that tired opener
+- DO NOT open with "Dear Hiring Manager" — that's handled elsewhere
+- Write in flowing, confident prose — think op-ed, not form letter
+- Open mid-thought, with something compelling about the work, the problem space, or a specific connection to the role
+- Do NOT bullet point anything — this is prose
+- 2–4 paragraphs. Tight. Specific. Human.
+- Reference actual experiences from the profile — no vague generalities
+- Tie the candidate's actual background to what the role specifically needs
+- Show genuine enthusiasm without being sycophantic
+- Voice: first-person, direct, confident
+
+CANDIDATE PROFILE:
 ${profile}
 
-Job Info:
+JOB INFO:
 ${JSON.stringify(jobInfo)}
 
-Output a structured JSON object with exactly these keys:
+Output a JSON object:
 {
   "name": "string",
-  "contact": {
-    "email": "string",
-    "phone": "string",
-    "location": "string"
-  },
-  "date": "string",
+  "contact": { "email": "string", "phone": "string", "location": "string" },
+  "date": "string — today's date, formatted like April 7, 2026",
   "company": "string",
   "role": "string",
-  "body": "string (the actual cover letter content, use triple curly braces in template for HTML safety)"
+  "body": "string — the prose body only. No salutation. No closing. Just the 2–4 paragraph body. Newlines between paragraphs."
 }
 
-Return ONLY the JSON.
+Return ONLY valid JSON. No markdown. No extra text.
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' }
     });
@@ -157,23 +171,31 @@ Return ONLY the JSON.
 
   async generateAnswers(profile: string, jobInfo: JobInfo, questions: string[]): Promise<string> {
     const prompt = `
-Answer the following application questions based on the candidate's profile and the job info.
+You're helping a candidate answer specific application questions for a ${jobInfo.role || 'role'} at ${jobInfo.company || 'a company'}.
 
-Questions:
-${questions.join('\n')}
+RULES:
+- Answer EACH question specifically and directly — don't deflect or be vague
+- Write in first person, genuine voice — like you're actually the candidate, not a robot
+- Pull specific examples from the candidate's profile — name actual projects, companies, accomplishments
+- Avoid clichés: "I am passionate about...", "I've always loved...", "I'm a team player"
+- Be honest and specific. Confidence without arrogance.
+- Each answer should be 2–5 sentences, substantive but not rambling
+- Format your response clearly: label each question before the answer
 
-Job Info:
-${JSON.stringify(jobInfo)}
+QUESTIONS TO ANSWER:
+${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
 
-Profile:
+CANDIDATE PROFILE:
 ${profile}
 
-Keep answers professional, concise, and focused on why the candidate is a good fit.
-Return the answers clearly numbered.
+JOB INFO:
+${JSON.stringify(jobInfo)}
+
+Write ALL answers, one after the other. Label each with the original question number and text.
     `;
 
     const response = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: MODEL,
       messages: [{ role: 'user', content: prompt }]
     });
 

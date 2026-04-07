@@ -8,7 +8,7 @@ const clTemplatePath = path.join(process.cwd(), 'templates', 'cover_letter_templ
 
 export async function POST(req: Request) {
   try {
-    const { jobDescription, actions, model } = await req.json();
+    const { jobDescription, actions, model, questions: rawQuestions } = await req.json();
     if (!jobDescription) return NextResponse.json({ error: 'Missing jobDescription' }, { status: 400 });
 
     const selectedModel: AIModelType = model || 'openai';
@@ -39,11 +39,15 @@ export async function POST(req: Request) {
     }
 
     if (actions.answers) {
-      const defaultQuestions = [
-        "Why do you want this role?",
-        "Why are you a good fit?"
-      ];
-      answers = await aiProvider.generateAnswers(profile, jobInfo, defaultQuestions);
+      // Use user-supplied questions if provided, otherwise fall back to generic ones
+      const questions: string[] = Array.isArray(rawQuestions) && rawQuestions.length > 0
+        ? rawQuestions
+        : [
+            "Why do you want this role?",
+            "What makes you a strong fit for this position?",
+            "Describe a technical challenge you solved and how."
+          ];
+      answers = await aiProvider.generateAnswers(profile, jobInfo, questions);
     }
 
     return NextResponse.json({

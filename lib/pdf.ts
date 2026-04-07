@@ -1,31 +1,31 @@
-import puppeteer from 'puppeteer';
+import { chromium } from 'playwright';
 
 export async function generatePDF(html: string): Promise<Buffer> {
-  const browser = await puppeteer.launch({
+  // Use Playwright since it is already configured in our Docker environment
+  const browser = await chromium.launch({
     headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
   const page = await browser.newPage();
 
-  // Set HTML content and wait for fonts to load
+  // Set HTML content and wait for it to be fully rendered
   await page.setContent(html, { 
-    waitUntil: 'networkidle0',
-    timeout: 30000 
+    waitUntil: 'networkidle',
   });
 
-  const pdf = await page.pdf({
+  // Generate PDF buffer
+  const pdfBuffer = await page.pdf({
     format: 'A4',
     printBackground: true,
     margin: {
-      top: '0px',
-      right: '0px',
-      bottom: '0px',
-      left: '0px',
+      top: '0.5in',
+      right: '0.5in',
+      bottom: '0.5in',
+      left: '0.5in',
     },
     preferCSSPageSize: true
   });
 
   await browser.close();
-  // Casting to Buffer for older node environments if needed, but Unit8Array/Buffer works globally here
-  return Buffer.from(pdf);
+  // Playwright returns a Uint8Array; Buffer.from converts it for Node.js usage
+  return Buffer.from(pdfBuffer);
 }

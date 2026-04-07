@@ -12,6 +12,11 @@ export interface MatchInfo {
   [key: string]: any;
 }
 
+export interface SkillCategory {
+  category: string;
+  skills: string[];
+}
+
 export interface AIProvider {
   extractJobInfo: (description: string) => Promise<JobInfo>;
   matchProfile: (profile: string, jobInfo: JobInfo) => Promise<MatchInfo>;
