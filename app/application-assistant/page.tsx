@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Sparkles, Loader2 } from 'lucide-react';
+import { Sparkles, Loader2, Download } from 'lucide-react';
 
 function AssistantContent() {
   const searchParams = useSearchParams();
@@ -42,6 +42,22 @@ function AssistantContent() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleDownload = () => {
+    const content = results?.[activeTab];
+    if (!content) return;
+
+    const fileName = `${activeTab}_${new Date().getTime()}.md`;
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = fileName;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -141,6 +157,14 @@ function AssistantContent() {
                   Answers
                 </button>
               )}
+              <button 
+                onClick={handleDownload}
+                className="px-8 py-4 bg-white text-black border-l-4 border-black hover:bg-black hover:text-white transition-colors flex items-center justify-center font-bold text-xs uppercase"
+                title="Download as Markdown"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                EXPORT
+              </button>
             </div>
             
             <div className="flex-1 p-8 lg:p-16 overflow-y-auto bg-white">

@@ -1,36 +1,51 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Application Assistant (JOB ASSIST)
 
-## Getting Started
+An AI-powered automation system for managing, tracking, and completing job applications. JOB ASSIST uses local AI context matched with real-time job listings to streamline your career search.
 
-First, run the development server:
+## 🚀 Overview
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+JOB ASSIST is an editorial-style, high-fidelity dashboard built with **Next.js 14**, **Tailwind CSS**, and **OpenAI**. It specializes in:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **AI-Driven Fact Matching**: Automatically extracts job requirements and matches them against your professional profile.
+- **Dynamic Content Generation**: Generates resumes, cover letters, and application answers on the fly.
+- **Job Watcher**: Monitors and tracks specific job application flows.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🛠️ Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework**: Next.js 15 (App Router)
+- **Styling**: Creative/Editorial CSS with Tailwind
+- **AI Models**: OpenAI GPT-4o-mini
+- **Icons**: Lucide Icons
+- **Fonts**: Playfair Display (Serif), IBM Plex Mono (Monospace)
 
-## Learn More
+## 📁 System Architecture
 
-To learn more about Next.js, take a look at the following resources:
+- `/app`: Main dashboard, job-watcher, profile-editor, and application-assistant routes.
+- `/lib/ai.ts`: Core AI logic (OpenAI integration).
+- `/templates`: Markdown templates for generated documents.
+- `/docs`: Detailed system documentation and bug trackers.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🚦 Getting Started
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Environment Variables**: Create a `.env.local` file with:
+   ```env
+   OPENAI_API_KEY=your_key_here
+   ```
+2. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+3. **Run Dev Server**:
+   ```bash
+   npm run dev
+   ```
 
-## Deploy on Vercel
+## 📜 Documentation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+For deeper architectural details, check out:
+- [System Overview](docs/system_overview.md)
+- [API Reference](docs/api_reference.md)
+- [Bug Tracker](docs/bug_tracker.md)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Built with precision and intentionality by [Antigravity].*
