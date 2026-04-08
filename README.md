@@ -59,4 +59,3 @@ For deeper architectural details, check out:
 - [Bug Tracker](docs/bug_tracker.md)
 
 ---
-*Built with precision and intentionality by [Antigravity].*
