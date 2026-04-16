@@ -9,7 +9,7 @@ services:
       - ollama_storage:/root/.ollama
     # AUTOMATIC BOOTSTRAP: Pull the model specified in .env on first launch!
     entrypoint: /bin/sh
-    command: -c "ollama serve & sleep 10 && ollama pull llama3 && wait"
+    command: -c "ollama serve & sleep 10 && ollama pull gemma4:e4b && wait"
     restart: unless-stopped
 
   # Core Job Automation Application
@@ -23,6 +23,8 @@ services:
     # Automatically import all keys and secrets from the local .env file!
     env_file:
       - .env
+    volumes:
+      - ./data:/app/data
     # We can still provide explicit overrides here for Docker-specific networking.
     environment:
       - LOCAL_LLM_URL=http://ollama:11434/v1

@@ -126,6 +126,7 @@ Return ONLY valid JSON. No markdown fences. No explanation.
   },
 
   async generateCoverLetter(profile: string, jobInfo: JobInfo, template: string): Promise<string> {
+    const date = new Date().toISOString().split('T')[0];
     const prompt = `
 You are a writing coach helping a real candidate write an unforgettable cover letter for a ${jobInfo.role || 'role'} position at ${jobInfo.company || 'the company'}.
 
@@ -156,7 +157,7 @@ Output a JSON object:
   "role": "string",
   "body": "string — the prose body only. No salutation. No closing. Just the 2–4 paragraph body. Newlines between paragraphs."
 }
-
+STRICT: ensure accurate date. Today is ${date}.
 Return ONLY valid JSON. No markdown. No extra text.
     `;
 

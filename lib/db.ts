@@ -1,8 +1,14 @@
 import Database from 'better-sqlite3';
+import fs from 'fs';
 import path from 'path';
 
 // Local sqlite DB in the data directory
-const dbPath = path.join(process.cwd(), 'data', 'app.db');
+const dataDir = path.join(process.cwd(), 'data');
+if (!fs.existsSync(dataDir)) {
+  fs.mkdirSync(dataDir, { recursive: true });
+}
+
+const dbPath = path.join(dataDir, 'app.db');
 const db = new Database(dbPath);
 
 db.pragma('journal_mode = WAL');

@@ -23,11 +23,13 @@ AI & Analytics Engineer with strong experience building scalable AI-driven syste
 - Developed RAG-based search systems integrating LLMs with vector databases and custom middleware, enabling accurate querying of internal technical documentation.
 - Engineered CI/CD pipelines using GitHub Actions to automate testing and deployment of AI-driven analytics dashboards, ensuring high availability and reliability.
 
+
 ### Data Analyst Intern at Reliance Infosystems
 *Jan 2025 - July 2025*
 - Designed and implemented gold-layer data models and Power BI dashboards using star schema and DAX to deliver actionable KPI insights.
-- Automated analytics workflows including testing, reporting, and deployment using GitHub Actions, improving consistency and version control.
+- Automated analytics workflows, including testing, reporting, and deployment using GitHub Actions, improving consistency and version control.
 - Performed data validation and anomaly detection using Python and SQL, ensuring high data quality for downstream analytics and AI use cases.
+
 
 ## Projects
 

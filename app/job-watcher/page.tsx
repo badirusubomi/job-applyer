@@ -54,7 +54,18 @@ export default function JobWatcher() {
 
   return (
     <div className="flex-1 p-8 lg:p-12 overflow-y-auto w-full max-w-5xl mx-auto text-black">
-      <h1 className="text-4xl lg:text-5xl font-black font-playfair tracking-tight mb-8 uppercase">Radar Network</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <h1 className="text-4xl lg:text-5xl font-black font-playfair tracking-tight uppercase">Radar Network</h1>
+        <button 
+          onClick={async () => {
+            await fetch('/api/jobs/acknowledge', { method: 'POST' });
+            await fetchSources();
+          }}
+          className="px-6 py-2 bg-black text-white border-2 border-black font-bold uppercase tracking-widest text-xs hover:bg-[#e8fc3b] hover:text-black transition-colors shadow-[4px_4px_0px_0px_rgba(232,252,59,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+        >
+          Acknowledge All
+        </button>
+      </div>
 
       <div className="bg-white p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-12">
         <h2 className="text-xl font-black tracking-tight uppercase mb-6">Establish New Uplink</h2>

@@ -6,7 +6,7 @@ const localAI = new OpenAI({
   apiKey: 'ollama', // required field, not used for local
 });
 
-const MODEL = process.env.LOCAL_LLM_MODEL || 'llama3';
+const MODEL = process.env.LOCAL_LLM_MODEL || 'gemma4:e4b';
 
 export const LocalProvider: AIProvider = {
   async extractJobInfo(description: string): Promise<JobInfo> {
