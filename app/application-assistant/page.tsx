@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Sparkles, Loader2, Download } from 'lucide-react';
+import { Sparkles, Loader2, Download, Pencil, Save } from 'lucide-react';
+import Editor from '@monaco-editor/react';
 
 const STORAGE_KEY = 'assistant_session';
 
@@ -36,6 +37,15 @@ function AssistantContent() {
     coverLetter: true,
     answers: true
   });
+  
+  // Editor View State
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState('');
+
+  // Reset editor mode when tabs switch
+  useEffect(() => {
+    setIsEditing(false);
+  }, [activeTab]);
 
   // Persist all state changes to localStorage
   const persistSession = useCallback((updates: object) => {
@@ -124,6 +134,26 @@ function AssistantContent() {
     } catch (err) {
       console.error('Download failed', err);
       alert('PDF export failed: ' + err);
+    }
+  };
+
+  const handleToggleEdit = () => {
+    if (isEditing) {
+      try {
+        const parsed = JSON.parse(editContent);
+        setResults({ ...results, [activeTab]: JSON.stringify(parsed) });
+        setIsEditing(false);
+      } catch (e) {
+        alert("Invalid JSON format. Please fix any syntax errors before saving.");
+      }
+    } else {
+      try {
+        const parsed = JSON.parse(results[activeTab]);
+        setEditContent(JSON.stringify(parsed, null, 2));
+      } catch {
+        setEditContent(results[activeTab] || '{}');
+      }
+      setIsEditing(true);
     }
   };
 
@@ -296,12 +326,56 @@ function AssistantContent() {
             
             {/* Content area */}
             <div className="flex-1 overflow-hidden relative">
-              {activeTab !== 'answers' && previewHtml ? (
-                <iframe
-                  srcDoc={previewHtml}
-                  className="w-full h-full border-none"
-                  title="PDF Preview"
-                />
+              {activeTab !== 'answers' && results?.[activeTab] && (
+                <button
+                  onClick={handleToggleEdit}
+                  className={`absolute bottom-6 right-8 z-10 flex items-center px-6 py-3 font-mono text-xs font-bold uppercase tracking-widest border-4 shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all active:translate-y-1 active:shadow-none ${
+                    isEditing ? 'bg-[#ff5e5b] text-white border-black hover:bg-black' : 'bg-[#e8fc3b] text-black border-black hover:bg-black hover:text-[#e8fc3b]'
+                  }`}
+                >
+                  {isEditing ? (
+                    <>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save & View
+                    </>
+                  ) : (
+                    <>
+                      <Pencil className="w-4 h-4 mr-2" />
+                      Edit JSON
+                    </>
+                  )}
+                </button>
+              )}
+
+              {activeTab !== 'answers' ? (
+                isEditing ? (
+                  <div className="w-full h-full bg-[#1e1e1e]">
+                    <Editor
+                      height="100%"
+                      defaultLanguage="json"
+                      theme="vs-dark"
+                      value={editContent}
+                      onChange={(value) => setEditContent(value || '')}
+                      options={{
+                        minimap: { enabled: false },
+                        formatOnPaste: true,
+                        fontSize: 14,
+                        fontFamily: 'monospace',
+                        wordWrap: 'on'
+                      }}
+                    />
+                  </div>
+                ) : previewHtml ? (
+                  <iframe
+                    srcDoc={previewHtml}
+                    className="w-full h-full border-none"
+                    title="PDF Preview"
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center p-8 bg-[#f4f4f0]/30 font-mono text-xs uppercase tracking-widest text-black/40">
+                    Synthesizing Layout…
+                  </div>
+                )
               ) : activeTab === 'answers' && results.answers ? (
                 <div className="h-full overflow-y-auto p-8 lg:p-12">
                   <pre className="whitespace-pre-wrap font-mono text-sm text-black leading-relaxed">{results.answers}</pre>

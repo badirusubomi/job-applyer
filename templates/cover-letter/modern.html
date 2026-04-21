@@ -34,12 +34,12 @@
             font-family: 'Playfair Display', serif;
             font-size: 26pt;
             margin: 0 0 5px 0;
-            text-transform: uppercase;
+            text-transform: titlecase;
             letter-spacing: -1px;
             line-height: 1;
         }
         .contact {
-            text-transform: uppercase;
+            text-transform: titlecase;
             font-weight: bold;
             font-size: 8pt;
             letter-spacing: 0.5px;
@@ -60,7 +60,7 @@
         }
         .sign-off {
             font-weight: bold;
-            text-transform: uppercase;
+            text-transform: titlecase;
             letter-spacing: 1px;
             font-size: 8pt;
         }
@@ -68,7 +68,7 @@
             font-family: 'Playfair Display', serif;
             font-size: 16pt;
             margin-top: 8px;
-            text-transform: uppercase;
+            text-transform: titlecase;
         }
         @media print {
             body { padding: 0; background: transparent; }
@@ -86,14 +86,14 @@
     <div class="date">{{date}}</div>
 
     <div class="recipient">
-        <strong>TO THE HIRING TEAM AT {{company}}</strong><br>
+        <strong>To The Hiring Team At {{company}}</strong><br>
         RE: {{role}}
     </div>
 
     <div class="content">{{body}}</div>
 
     <div class="signature">
-        <div class="sign-off">SINCERELY,</div>
+        <div class="sign-off">Sincerely,</div>
         <div class="name">{{name}}</div>
     </div>
 </body>
