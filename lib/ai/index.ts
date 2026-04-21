@@ -1,20 +1,20 @@
 import { AIProvider } from './types';
-import { OpenAIProvider } from './providers/openai';
-import { GeminiProvider } from './providers/gemini';
-import { LocalProvider } from './providers/local';
+import { createOpenAIProvider } from './providers/openai';
+import { createGeminiProvider } from './providers/gemini';
+import { createLocalProvider } from './providers/local';
 
 export type AIModelType = 'openai' | 'gemini' | 'local';
 
-export function getProvider(model: AIModelType): AIProvider {
+export function getProvider(model: AIModelType, apiKey?: string): AIProvider {
   switch (model) {
     case 'openai':
-      return OpenAIProvider;
+      return createOpenAIProvider(apiKey);
     case 'gemini':
-      return GeminiProvider;
+      return createGeminiProvider(apiKey);
     case 'local':
-      return LocalProvider;
+      return createLocalProvider(apiKey); // Note: apiKey is treated as baseURL if local
     default:
-      return OpenAIProvider;
+      return createOpenAIProvider(apiKey);
   }
 }
 

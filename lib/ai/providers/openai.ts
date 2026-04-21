@@ -1,11 +1,12 @@
 import OpenAI from 'openai';
 import { AIProvider, JobInfo, MatchInfo } from '../types';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY || 'dummy_key_for_build' });
-
 const MODEL = 'gpt-4o-mini';
 
-export const OpenAIProvider: AIProvider = {
+export const createOpenAIProvider = (apiKey?: string): AIProvider => {
+  const openai = new OpenAI({ apiKey: apiKey || process.env.OPENAI_API_KEY || 'dummy_key_for_build' });
+
+  return {
   async extractJobInfo(description: string): Promise<JobInfo> {
     const prompt = `
 Extract the following information from the job description:
@@ -202,4 +203,5 @@ Write ALL answers, one after the other. Label each with the original question nu
 
     return response.choices[0].message.content || '';
   }
+  };
 };

@@ -1,14 +1,15 @@
 import OpenAI from 'openai';
 import { AIProvider, JobInfo, MatchInfo } from '../types';
 
-const localAI = new OpenAI({
-  baseURL: process.env.LOCAL_LLM_URL || 'http://localhost:11434/v1',
-  apiKey: 'ollama', // required field, not used for local
-});
-
 const MODEL = process.env.LOCAL_LLM_MODEL || 'gemma4:e4b';
 
-export const LocalProvider: AIProvider = {
+export const createLocalProvider = (baseUrl?: string): AIProvider => {
+  const localAI = new OpenAI({
+    baseURL: baseUrl || process.env.LOCAL_LLM_URL || 'http://localhost:11434/v1',
+    apiKey: 'ollama', // required field, not used for local
+  });
+
+  return {
   async extractJobInfo(description: string): Promise<JobInfo> {
     const prompt = `
 Extract the following information from the job description:
@@ -204,4 +205,5 @@ Write ALL answers, one after the other. Label each with the original question nu
 
     return response.choices[0].message.content || '';
   }
+  };
 };

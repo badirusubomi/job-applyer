@@ -1,11 +1,12 @@
 import { GoogleGenAI } from '@google/genai';
 import { AIProvider, JobInfo, MatchInfo } from '../types';
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || 'dummy_key_for_build' });
-
 const MODEL = 'gemini-2.5-flash';
 
-export const GeminiProvider: AIProvider = {
+export const createGeminiProvider = (apiKey?: string): AIProvider => {
+  const ai = new GoogleGenAI({ apiKey: apiKey || process.env.GEMINI_API_KEY || 'dummy_key_for_build' });
+
+  return {
   async extractJobInfo(description: string): Promise<JobInfo> {
     const prompt = `
 Extract the following information from the job description:
@@ -201,4 +202,5 @@ Write ALL answers, one after the other. Label each with the original question nu
 
     return response.text || '';
   }
+  };
 };

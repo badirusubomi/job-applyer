@@ -8,14 +8,12 @@ const clTemplatePath = path.join(process.cwd(), 'templates', 'cover_letter_templ
 
 export async function POST(req: Request) {
   try {
-    const { jobDescription, actions, model, questions: rawQuestions } = await req.json();
+    const { jobDescription, actions, model, questions: rawQuestions, apiKey, profile } = await req.json();
     if (!jobDescription) return NextResponse.json({ error: 'Missing jobDescription' }, { status: 400 });
+    if (!profile) return NextResponse.json({ error: 'Missing profile' }, { status: 400 });
 
     const selectedModel: AIModelType = model || 'openai';
-    const aiProvider = getProvider(selectedModel);
-
-    const profile = await fs.readFile(profilePath, 'utf8').catch(() => '');
-    if (!profile) return NextResponse.json({ error: 'Profile not found. Please create it first.' }, { status: 400 });
+    const aiProvider = getProvider(selectedModel, apiKey);
 
     const clTemplate = await fs.readFile(clTemplatePath, 'utf8').catch(() => '');
 

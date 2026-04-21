@@ -21,9 +21,18 @@ JOB ASSIST is an editorial-style, high-fidelity dashboard built with **Next.js 1
 ## 📁 System Architecture
 
 - `/app`: Main dashboard, job-watcher, profile-editor, and application-assistant routes.
-- `/lib/ai.ts`: Core AI logic (OpenAI integration).
+- `/lib/ai/`: Core AI architecture with stateless providers (OpenAI, Gemini, Local).
+- `/lib/utils/privacy.ts`: Client-side PII masking and unmasking engine.
 - `/templates`: Markdown templates for generated documents.
 - `/docs`: Detailed system documentation and bug trackers.
+
+## 🔒 Privacy & Security (Bring Your Own Key)
+
+JOB ASSIST is designed as a stateless, client-first application to maximize your privacy and security:
+
+- **BYOK (Bring Your Own Key)**: API keys are inputted in the browser and stored locally in your browser's `localStorage` — they are never saved to a database or server file. 
+- **PII Masking**: The system features a built-in privacy guard that masks your sensitive data (Name, Email, Phone, Address) with placeholders (e.g. `{{USER_NAME}}`) *before* sending context to any AI model. The real data is re-injected client-side when viewing or downloading the final PDF.
+- **Strict CSP**: The application utilizes a strict Content Security Policy to heavily mitigate XSS attacks against the `localStorage` vault.
 
 ## 🚦 Getting Started
 
