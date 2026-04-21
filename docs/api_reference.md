@@ -1,46 +1,61 @@
 # API Reference: JOB ASSIST Core Logic
 
-This document describes the core AI integration logic present in `lib/ai.ts`.
+This document describes the core AI integration logic and the privacy protection layer introduced in the stateless refactor.
 
-## OpenAI Integration
+## Provider Architecture (`lib/ai/`)
 
-JOB ASSIST uses OpenAI's `gpt-4o-mini` model by default. All calls are made via the `openai` client instance.
+All AI interactions are handled by specific providers (OpenAI, Gemini, Local) which are initialized via factory functions.
 
-### `extractJobInfo(description: string)`
-
-Extracts structured data from a raw job description string.
-
--   **Input**: `description` (Markdown or Plaintext).
--   **Output**: JSON object `{ role, company, skills, responsibilities }`.
--   **Notes**: Returns an empty object on failure.
-
-### `matchProfile(profile: string, jobInfo: any)`
-
-Compares the candidate's professional profile against the extracted job data.
-
--   **Inputs**:
-    -   `profile`: User's profile in Markdown.
-    -   `jobInfo`: Structured job data (from `extractJobInfo`).
--   **Output**: JSON object `{ relevant_experience, relevant_skills }`.
-
-### `generateResume(profile: string, jobInfo: any, matchInfo: any)`
-
-Generates a tailored Markdown version of the candidate's resume.
-
--   **Inputs**: Profile, Job Info, Match Info.
--   **Output**: Markdown Resume.
--   **Constraints**:
-    -   DO NOT fabricate experience.
-    -   DO NOT add new roles not found in the profile.
-    -   ONLY rewrite existing bullet points for better alignment.
-
-### `generateCoverLetter(profile: string, jobInfo: any, template: string)`
-
-Generates a tailored cover letter based on a provided Markdown template.
-
--   **Inputs**: Profile, Job Info, Template.
--   **Output**: Markdown Cover Letter.
--   **Notes**: Replaces placeholders like `{{company}}`, `{{role}}`, and `{{custom_paragraph}}`.
+### `getProvider(model: AIModelType, apiKey?: string)`
+The entry point for retrieving a configured provider instance.
+- **`model`**: `'openai' | 'gemini' | 'local'`.
+- **`apiKey`**: Optional key provided by the client. For `'local'`, this acts as the base URL.
 
 ---
-*Last Updated: 2026-04-07*
+
+## AI Provider Interface
+
+Every provider implements the following asynchronous methods:
+
+### `extractJobInfo(description: string)`
+Extracts structured data from a raw job description.
+- **Output**: `{ role, company, skills, responsibilities }`.
+
+### `matchProfile(profile: string, jobInfo: JobInfo)`
+Matches candidate profile (Markdown) against job requirements.
+- **Output**: `{ relevant_experience, relevant_skills }`.
+
+### `generateResume(profile: string, jobInfo: JobInfo, matchInfo: MatchInfo)`
+Generates a tailored JSON structure for rendering a resume.
+
+### `generateCoverLetter(profile: string, jobInfo: JobInfo, template: string)`
+Generates a tailored JSON structure for a cover letter.
+
+---
+
+## Privacy Guard (`lib/utils/privacy.ts`)
+
+Ensures PII is never sent to the LLM in plain text.
+
+### `maskPii(text: string, config: PrivacyConfig)`
+Scans text for values defined in `PrivacyConfig` (Name, Email, Phone, Address) and replaces them with placeholders like `{{USER_NAME}}`.
+
+### `unmaskPii(data: any, config: PrivacyConfig)`
+Recursively replaces placeholders in a generated object or string back with the user's real values before local use.
+
+---
+
+## REST API Endpoint: `/api/assistant/generate` [POST]
+
+The primary endpoint for all assistant generations.
+
+### Request Body
+- **`jobDescription`**: string (required)
+- **`profile`**: string (required - Markdown)
+- **`model`**: 'openai' | 'gemini' | 'local'
+- **`apiKey`**: string (required if model is cloud-based)
+- **`actions`**: `{ resume: boolean, coverLetter: boolean, answers: boolean }`
+- **`questions`**: string[] (optional - for application answers)
+
+---
+*Last Updated: 2026-04-20*

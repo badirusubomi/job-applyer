@@ -4,7 +4,7 @@ import { generatePDF } from '@/lib/pdf';
 
 export async function POST(req: Request) {
   try {
-    const { type, templateName = 'modern', data } = await req.json();
+    const { type, templateName = 'modern', data, fontConfig } = await req.json();
 
     if (!type || !data) {
       return NextResponse.json({ error: 'Missing type or data' }, { status: 400 });

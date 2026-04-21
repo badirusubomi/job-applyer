@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&family=Playfair+Display:wght@900&display=swap" rel="stylesheet">
+    <link href="{{fontImportUrl}}" rel="stylesheet">
     <style>
         :root {
             --black: #000;
             --white: #fff;
             --accent: #e8fc3b;
+            --primary-font: {{fontFamily}};
         }
         * {
             box-sizing: border-box;
@@ -17,13 +18,13 @@
             print-color-adjust: exact;
         }
         body {
-            font-family: 'IBM Plex Mono', monospace;
+            font-family: var(--primary-font), sans-serif;
             line-height: 1.35;
             color: var(--black);
             margin: 0;
             padding: 30px;
             background: var(--white);
-            font-size: 9.5pt;
+            font-size: 12pt;
         }
         .header {
             border-bottom: 3px solid var(--black);
@@ -41,7 +42,7 @@
         .contact {
             text-transform: titlecase;
             font-weight: bold;
-            font-size: 8pt;
+            font-size: 10pt;
             letter-spacing: 0.5px;
         }
         .date {
@@ -62,7 +63,7 @@
             font-weight: bold;
             text-transform: titlecase;
             letter-spacing: 1px;
-            font-size: 8pt;
+            font-size: 12pt;
         }
         .name {
             font-family: 'Playfair Display', serif;

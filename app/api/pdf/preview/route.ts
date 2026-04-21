@@ -3,14 +3,14 @@ import { renderTemplate } from '@/lib/template';
 
 export async function POST(req: Request) {
   try {
-    const { type, templateName = 'modern', data } = await req.json();
+    const { type, templateName = 'modern', data, fontConfig } = await req.json();
 
     if (!type || !data) {
       return NextResponse.json({ error: 'Missing type or data' }, { status: 400 });
     }
 
     const finalType = type === 'resume' ? 'resume' : 'cover-letter';
-    const html = await renderTemplate(finalType, templateName, data);
+    const html = await renderTemplate(finalType, templateName, data, fontConfig);
     
     return new Response(html, {
       headers: {

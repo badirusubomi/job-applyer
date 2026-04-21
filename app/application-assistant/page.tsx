@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Sparkles, Loader2, Download, Pencil, Save, Settings as SettingsIcon, User, FileText, Trash2, Key, AlertTriangle } from 'lucide-react';
+import { Sparkles, Loader2, Download, Pencil, Save, Settings as SettingsIcon, User, FileText, Trash2, Key, AlertTriangle, X, Type } from 'lucide-react';
 import Editor from '@monaco-editor/react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -13,6 +13,15 @@ const STORAGE_KEY = 'assistant_session';
 const PROFILE_KEY = 'assistant_profile';
 const PRIVACY_KEY = 'assistant_privacy';
 const KEYS_KEY = 'assistant_keys';
+const FONT_KEY = 'assistant_font';
+
+const FONTS = [
+  { id: 'mono', name: 'IBM Plex Mono (Classic)', family: "'IBM Plex Mono', monospace", importUrl: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" },
+  { id: 'inter', name: 'Inter (Modern Sans)', family: "'Inter', sans-serif", importUrl: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" },
+  { id: 'playfair', name: 'Playfair Display (Editorial)', family: "'Playfair Display', serif", importUrl: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" },
+  { id: 'garamond', name: 'EB Garamond (Elegant)', family: "'EB Garamond', serif", importUrl: "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&display=swap" },
+  { id: 'jetbrains', name: 'JetBrains Mono (Technical)', family: "'JetBrains Mono', monospace", importUrl: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" },
+];
 
 const DEFAULT_PROFILE = `# Sample Profile
 
@@ -48,42 +57,66 @@ function AssistantContent() {
   const searchParams = useSearchParams();
   const urlParam = searchParams.get('url');
 
-  // Load state
-  const savedSession = loadData(STORAGE_KEY, {});
-  const [profile, setProfile] = useState<string>('');
+  // Hydration safety
+  const [mounted, setMounted] = useState(false);
+
+  // Initial states with safe defaults for SSR
+  const [profile, setProfile] = useState<string>(DEFAULT_PROFILE);
   const [privacy, setPrivacy] = useState<PrivacyConfig>({});
   const [apiKeys, setApiKeys] = useState<{ openai?: string, gemini?: string }>({});
+  const [selectedFontId, setSelectedFontId] = useState<string>('mono');
+  
+  const [jobDescription, setJobDescription] = useState<string>(urlParam || '');
+  const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter' | 'answers'>('resume');
+  const [results, setResults] = useState<any>(null);
+  const [selectedModel, setSelectedModel] = useState<string>('gemini');
+  const [questions, setQuestions] = useState<string>('');
+  const [actions, setActions] = useState({ resume: true, coverLetter: true, answers: true });
 
   const [sidebarTab, setSidebarTab] = useState<'build' | 'profile' | 'settings'>('build');
   const [showOnboarding, setShowOnboarding] = useState(false);
-
-  // App State
-  const [jobDescription, setJobDescription] = useState<string>(urlParam || savedSession?.jobDescription || '');
   const [loading, setLoading] = useState(false);
-  const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter' | 'answers'>(savedSession?.activeTab || 'resume');
-  const [results, setResults] = useState<any>(savedSession?.results || null);
-  const [selectedModel, setSelectedModel] = useState<string>(savedSession?.selectedModel || 'gemini');
-  const [questions, setQuestions] = useState<string>(savedSession?.questions || '');
-  const [actions, setActions] = useState(savedSession?.actions || { resume: true, coverLetter: true, answers: true });
+  const [toasts, setToasts] = useState<{ id: string, message: string, type: 'error' | 'success' }[]>([]);
   
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
 
-  // Load everything on mount
+  // LOAD FROM LOCALSTORAGE AFTER MOUNT
   useEffect(() => {
-    const p = localStorage.getItem(PROFILE_KEY) || DEFAULT_PROFILE;
-    setProfile(p);
+    setMounted(true);
+    
+    // Sync all persistence
+    const savedSession = loadData(STORAGE_KEY, {});
+    if (savedSession.jobDescription) setJobDescription(urlParam || savedSession.jobDescription);
+    if (savedSession.selectedModel) setSelectedModel(savedSession.selectedModel);
+    if (savedSession.actions) setActions(savedSession.actions);
+    if (savedSession.results) setResults(savedSession.results);
+    if (savedSession.activeTab) setActiveTab(savedSession.activeTab);
+    if (savedSession.questions) setQuestions(savedSession.questions);
+
+    setProfile(localStorage.getItem(PROFILE_KEY) || DEFAULT_PROFILE);
     setPrivacy(loadData(PRIVACY_KEY, {}));
     
     const keys = loadData(KEYS_KEY, {});
     setApiKeys(keys);
 
+    const savedFont = loadData(FONT_KEY);
+    if (savedFont) setSelectedFontId(savedFont);
+
     if (!keys.openai && !keys.gemini) {
       setShowOnboarding(true);
     }
-  }, []);
+  }, [urlParam]);
+
+  const addToast = (message: string, type: 'error' | 'success' = 'error') => {
+    const id = Math.random().toString(36).substring(7);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 5000);
+  };
 
   const persistSession = useCallback((updates: object) => {
     if (typeof window === 'undefined') return;
@@ -93,7 +126,12 @@ function AssistantContent() {
     } catch {}
   }, []);
 
-  useEffect(() => { persistSession({ jobDescription, selectedModel, actions, results, activeTab, questions }); }, [jobDescription, selectedModel, actions, results, activeTab, questions, persistSession]);
+  // Update effect dependency to include all session triggers
+  useEffect(() => { 
+    if (mounted) {
+      persistSession({ jobDescription, selectedModel, actions, results, activeTab, questions }); 
+    }
+  }, [mounted, jobDescription, selectedModel, actions, results, activeTab, questions, persistSession]);
 
   const saveProfile = (p: string) => {
     setProfile(p);
@@ -110,6 +148,11 @@ function AssistantContent() {
     localStorage.setItem(KEYS_KEY, JSON.stringify(k));
   };
 
+  const saveFont = (fid: string) => {
+    setSelectedFontId(fid);
+    localStorage.setItem(FONT_KEY, JSON.stringify(fid));
+  };
+
   const clearAllData = () => {
     if (confirm("Are you sure you want to clear ALL data (Profile, Keys, Settings, Session)? This cannot be undone.")) {
       localStorage.clear();
@@ -122,7 +165,7 @@ function AssistantContent() {
     
     const currentKey = selectedModel === 'openai' ? apiKeys.openai : apiKeys.gemini;
     if (selectedModel !== 'local' && !currentKey) {
-      alert(`API Key required for ${selectedModel}. Please save it in the Settings tab.`);
+      addToast("API Key required. Check Options tab.");
       setSidebarTab('settings');
       return;
     }
@@ -150,17 +193,17 @@ function AssistantContent() {
       
       if (!res.ok) throw new Error(data.error || 'Failed to generate');
 
-      // Unmask PII from response before saving
       const unmaskedData = unmaskPii(data, privacy);
-      
       setResults(unmaskedData);
+      
       if (unmaskedData.resume && actions.resume) setActiveTab('resume');
       else if (unmaskedData.coverLetter && actions.coverLetter) setActiveTab('coverLetter');
       else if (unmaskedData.answers && actions.answers) setActiveTab('answers');
       setIsEditing(false);
+      addToast("Generation successful!", "success");
     } catch (err: any) {
       console.error(err);
-      alert('Failed to generate: ' + err.message);
+      addToast("Generation failed. Please try again soon.", "error");
     } finally {
       setLoading(false);
     }
@@ -170,13 +213,16 @@ function AssistantContent() {
     const content = results?.[activeTab];
     if (!content || activeTab === 'answers') return;
 
+    const font = FONTS.find(f => f.id === selectedFontId) || FONTS[0];
+
     try {
       const resp = await fetch('/api/pdf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: activeTab === 'resume' ? 'resume' : 'cover-letter',
-          data: typeof content === 'string' ? JSON.parse(content) : content
+          data: typeof content === 'string' ? JSON.parse(content) : content,
+          fontConfig: { family: font.family, importUrl: font.importUrl }
         })
       });
 
@@ -190,7 +236,7 @@ function AssistantContent() {
       link.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
-      alert('PDF export failed: ' + err.message);
+      addToast("PDF export failed. Try again soon.", "error");
     }
   };
 
@@ -201,7 +247,7 @@ function AssistantContent() {
         setResults({ ...results, [activeTab]: parsed });
         setIsEditing(false);
       } catch (e) {
-        alert("Invalid JSON format. Please fix any syntax errors before saving.");
+        addToast("Invalid JSON format.");
       }
     } else {
       const raw = results[activeTab];
@@ -215,12 +261,15 @@ function AssistantContent() {
       if (results?.[activeTab] && activeTab !== 'answers' && !isEditing) {
         try {
           const raw = results[activeTab];
+          const font = FONTS.find(f => f.id === selectedFontId) || FONTS[0];
+          
           const resp = await fetch('/api/pdf/preview', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               type: activeTab === 'resume' ? 'resume' : 'cover-letter',
-              data: typeof raw === 'string' ? JSON.parse(raw) : raw
+              data: typeof raw === 'string' ? JSON.parse(raw) : raw,
+              fontConfig: { family: font.family, importUrl: font.importUrl }
             })
           });
           const html = await resp.text();
@@ -230,12 +279,32 @@ function AssistantContent() {
         setPreviewHtml(null);
       }
     };
-    updatePreview();
-  }, [results, activeTab, isEditing]);
+    if (mounted) updatePreview();
+  }, [mounted, results, activeTab, isEditing, selectedFontId]);
+
+  if (!mounted) {
+    return (
+      <div className="flex w-full h-full items-center justify-center bg-[#e5e5df] font-mono text-sm uppercase tracking-[0.2em] font-bold">
+        Initializing Vault...
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-[#e5e5df] text-black">
       
+      {/* Toast System */}
+      <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3">
+        {toasts.map(toast => (
+          <div key={toast.id} className={`p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between min-w-[300px] animate-in slide-in-from-right duration-300 ${toast.type === 'error' ? 'bg-[#ff5e5b] text-white' : 'bg-[#e8fc3b] text-black'}`}>
+            <span className="font-mono text-xs font-bold uppercase tracking-widest">{toast.message}</span>
+            <button onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))} className="ml-4 hover:opacity-50">
+              <X className="w-4 h-4 stroke-[3]" />
+            </button>
+          </div>
+        ))}
+      </div>
+
       {/* Onboarding Modal */}
       {showOnboarding && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
@@ -247,7 +316,7 @@ function AssistantContent() {
             <div className="space-y-4 font-mono text-sm">
               <div className="p-4 border-2 border-black bg-[#f4f4f0]">
                 <h3 className="font-bold uppercase tracking-wide mb-2"><Key className="inline w-4 h-4 mr-2" />API Key Advice</h3>
-                <p className="text-xs text-black/80">We highly recommend generating a "Project-Specific" or "Usage-Limited" key to protect your account. Never share your master keys.</p>
+                <p className="text-xs text-black/80">We highly recommend generating a "Project-Specific" key to protect your account. Never share master keys.</p>
                 <div className="mt-3 flex gap-4 text-xs font-bold uppercase underline">
                   <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="hover:text-[#ff5e5b]">OpenAI Keys</a>
                   <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="hover:text-[#e8fc3b] hover:bg-black px-1">Gemini Keys</a>
@@ -485,8 +554,30 @@ function AssistantContent() {
         {/* Settings Tab View */}
         {sidebarTab === 'settings' && (
           <div className="p-10 h-full overflow-y-auto w-full max-w-3xl">
-            <h1 className="text-3xl font-black font-playfair uppercase tracking-tight mb-8">Settings</h1>
+            <h1 className="text-3xl font-black font-playfair uppercase tracking-tight mb-8">Options</h1>
             
+            {/* Aesthetics Section */}
+            <div className="mb-12 space-y-6">
+              <h2 className="text-lg font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2">
+                <Type className="w-5 h-5 mr-3" /> File Aesthetics
+              </h2>
+              <p className="text-xs font-mono uppercase text-black/60 mb-4 leading-loose">
+                Customize the typographic signature of your generated PDF documents. Changes are applied instantly to the preview.
+              </p>
+              <div className="grid grid-cols-1 gap-4">
+                {FONTS.map(font => (
+                  <button
+                    key={font.id}
+                    onClick={() => saveFont(font.id)}
+                    className={`p-5 border-4 border-black flex flex-col items-start text-left transition-all hover:bg-[#e8fc3b] ${selectedFontId === font.id ? 'bg-[#e8fc3b] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]' : 'bg-white'}`}
+                  >
+                    <span className="text-xs font-bold uppercase tracking-widest mb-1">{font.name}</span>
+                    <span className="text-xl" style={{ fontFamily: font.family }}>Sample Text: The quick brown fox jumps...</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div className="mb-10 space-y-6">
               <h2 className="text-lg font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2">
                 <Key className="w-5 h-5 mr-3" /> API Keys
@@ -512,8 +603,7 @@ function AssistantContent() {
                 <AlertTriangle className="w-5 h-5 mr-3 text-[#ff5e5b]" /> Privacy & PII Masking
               </h2>
               <p className="text-xs font-mono uppercase text-black/60 mb-4 leading-loose">
-                Define the information you want masked when sending context to the LLM. 
-                These values will be replaced with placeholders (e.g., {"{{USER_NAME}}"}) in the prompt, and swapped back when generating the final PDF.
+                Define information to be masked (replaced with placeholders) before LLM transmission.
               </p>
               
               <div className="grid grid-cols-2 gap-6 font-mono text-sm">
