@@ -14,7 +14,7 @@ export async function POST(req: Request) {
     const finalType = type === 'resume' ? 'resume' : 'cover-letter';
     
     // Render HTML
-    const html = await renderTemplate(finalType, templateName, data);
+    const html = await renderTemplate(finalType, templateName, data, fontConfig);
     
     // Generate PDF
     const pdfBuffer = await generatePDF(html);

@@ -18,7 +18,7 @@ AI & Analytics Engineer with strong experience building scalable AI-driven syste
 ## Experience
 
 ### AI Systems Engineer at TechGen Pro
-*Sept 2025 - Present*
+*Sep 2025 - Present*
 - Architected and deployed agentic workflows using n8n and Node.js, automating multi-step data extraction and lead processing pipelines, reducing manual overhead by 40%.
 - Developed RAG-based search systems integrating LLMs with vector databases and custom middleware, enabling accurate querying of internal technical documentation.
 - Engineered CI/CD pipelines using GitHub Actions to automate testing and deployment of AI-driven analytics dashboards, ensuring high availability and reliability.

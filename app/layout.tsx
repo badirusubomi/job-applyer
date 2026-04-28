@@ -3,6 +3,7 @@ import { Playfair_Display, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import Link from 'next/link';
 import { Activity, FileText, Briefcase } from 'lucide-react';
+import SidebarNav from './components/SidebarNav';
 
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 const plexMono = IBM_Plex_Mono({ weight: ['400', '500', '600', '700'], subsets: ['latin'], variable: '--font-plex' });
@@ -25,36 +26,7 @@ export default function RootLayout({
           <div className="h-16 flex items-center px-6 border-b-2 border-white/20">
             <h1 className="text-2xl font-black font-playfair tracking-tighter">JOB ASSIST</h1>
           </div>
-          <nav className="flex-1 p-4 space-y-2">
-            <Link 
-              href="/dashboard"
-              className="flex items-center px-4 py-3 hover:bg-white hover:text-black transition-colors"
-            >
-              <Activity className="w-5 h-5 mr-3" />
-              Dashboard
-            </Link>
-            <Link 
-              href="/job-watcher"
-              className="flex items-center px-4 py-3 hover:bg-white hover:text-black transition-colors"
-            >
-              <Briefcase className="w-5 h-5 mr-3" />
-              Job Watcher
-            </Link>
-            <Link 
-              href="/profile-editor"
-              className="flex items-center px-4 py-3 hover:bg-white hover:text-black transition-colors"
-            >
-              <FileText className="w-5 h-5 mr-3" />
-              Profile Editor
-            </Link>
-            <Link 
-              href="/application-assistant"
-              className="flex items-center px-4 py-3 hover:bg-white hover:text-black transition-colors"
-            >
-              <Activity className="w-5 h-5 mr-3" />
-              Assistant
-            </Link>
-          </nav>
+          <SidebarNav />
         </aside>
 
         {/* Main Content */}
