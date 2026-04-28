@@ -201,6 +201,31 @@ Write ALL answers, one after the other. Label each with the original question nu
     });
 
     return response.text || '';
+  },
+
+  async expandSearchTerms(terms: string): Promise<string[]> {
+    const prompt = `
+Given the following job search terms, return an expanded array of similar and highly relevant job titles or keywords.
+For example, if given "Software Engineer", you might return ["Software Engineer", "Developer", "Programmer", "SWE", "Software Developer"].
+If the terms are empty or generic, return generic tech roles.
+
+Original Terms: ${terms || "Tech jobs"}
+
+Return ONLY a JSON object with a single key "terms" containing an array of strings. No explanations.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: prompt,
+      config: { responseMimeType: 'application/json' }
+    });
+
+    try {
+      const parsed = JSON.parse(response.text || '{}');
+      return parsed.terms || [];
+    } catch {
+      return [];
+    }
   }
   };
 };

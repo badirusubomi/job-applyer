@@ -202,6 +202,31 @@ Write ALL answers, one after the other. Label each with the original question nu
     });
 
     return response.choices[0].message.content || '';
+  },
+
+  async expandSearchTerms(terms: string): Promise<string[]> {
+    const prompt = `
+Given the following job search terms, return an expanded array of similar and highly relevant job titles or keywords.
+For example, if given "Software Engineer", you might return ["Software Engineer", "Developer", "Programmer", "SWE", "Software Developer"].
+If the terms are empty or generic, return generic tech roles.
+
+Original Terms: ${terms || "Tech jobs"}
+
+Return ONLY a JSON object with a single key "terms" containing an array of strings. No explanations.
+    `;
+
+    const response = await openai.chat.completions.create({
+      model: MODEL,
+      messages: [{ role: 'user', content: prompt }],
+      response_format: { type: 'json_object' }
+    });
+
+    try {
+      const parsed = JSON.parse(response.choices[0].message.content || '{}');
+      return parsed.terms || [];
+    } catch {
+      return [];
+    }
   }
   };
 };

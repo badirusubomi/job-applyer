@@ -8,7 +8,7 @@ export interface ScrapedJob {
   location?: string;
 }
 
-export async function scrapeJobs(url: string): Promise<ScrapedJob[]> {
+export async function scrapeJobs(url: string, expandedTerms: string[] = []): Promise<ScrapedJob[]> {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
   
@@ -31,12 +31,19 @@ export async function scrapeJobs(url: string): Promise<ScrapedJob[]> {
       if (text && text.length > 5 && text.length < 100) {
         // Quick heuristic: look for "engineer", "developer", "manager", "designer"
         const lowerText = text.toLowerCase();
-        if (
-          lowerText.includes('engineer') || 
-          lowerText.includes('developer') || 
-          lowerText.includes('designer') || 
-          lowerText.includes('manager')
-        ) {
+        let isMatch = false;
+        
+        if (expandedTerms && expandedTerms.length > 0) {
+          isMatch = expandedTerms.some(term => lowerText.includes(term.toLowerCase()));
+        } else {
+          // Fallback static list
+          isMatch = lowerText.includes('engineer') || 
+                    lowerText.includes('developer') || 
+                    lowerText.includes('designer') || 
+                    lowerText.includes('manager');
+        }
+
+        if (isMatch) {
           let link = '';
           if (tagName === 'a') {
             link = await el.getAttribute('href') || '';

@@ -8,6 +8,7 @@ export default function JobWatcher() {
   const [sources, setSources] = useState<any[]>([]);
   const [newName, setNewName] = useState('');
   const [newUrl, setNewUrl] = useState('');
+  const [newSearchTerms, setNewSearchTerms] = useState('');
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
@@ -29,20 +30,27 @@ export default function JobWatcher() {
     await fetch('/api/sources', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName, url: newUrl })
+      body: JSON.stringify({ name: newName, url: newUrl, search_terms: newSearchTerms })
     });
     setNewName('');
     setNewUrl('');
+    setNewSearchTerms('');
     await fetchSources();
     setLoading(false);
   };
 
   const refreshSource = async (id: string) => {
     setRefreshing(id);
+    const sessionStr = localStorage.getItem('assistant_session') || '{}';
+    const keysStr = localStorage.getItem('assistant_keys') || '{}';
+    const { selectedModel = 'openai' } = JSON.parse(sessionStr);
+    const keys = JSON.parse(keysStr);
+    const apiKey = selectedModel === 'openai' ? keys.openai : keys.gemini;
+
     await fetch('/api/sources/refresh', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourceId: id })
+      body: JSON.stringify({ sourceId: id, model: selectedModel, apiKey })
     });
     await fetchSources();
     setRefreshing(null);
@@ -68,10 +76,10 @@ export default function JobWatcher() {
       </div>
 
       <div className="bg-white p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] mb-12">
-        <h2 className="text-xl font-black tracking-tight uppercase mb-6">Establish New Uplink</h2>
+        <h2 className="text-xl font-black tracking-tight uppercase mb-6">Add Job Source</h2>
         <form onSubmit={addSource} className="flex flex-col sm:flex-row gap-6 items-end">
           <div className="flex-1 w-full">
-            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Target Alias</label>
+            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Source Name</label>
             <input 
               type="text" 
               value={newName} 
@@ -81,13 +89,23 @@ export default function JobWatcher() {
             />
           </div>
           <div className="flex-1 w-full">
-            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Target Vector (URL)</label>
+            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Source URL</label>
             <input 
               type="url" 
               value={newUrl} 
               onChange={e => setNewUrl(e.target.value)} 
               className="w-full px-4 py-3 border-4 border-black focus:outline-none focus:bg-[#e8fc3b]/10 font-mono text-sm"
               placeholder="https://..."
+            />
+          </div>
+          <div className="flex-1 w-full">
+            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Target Roles</label>
+            <input 
+              type="text" 
+              value={newSearchTerms} 
+              onChange={e => setNewSearchTerms(e.target.value)} 
+              className="w-full px-4 py-3 border-4 border-black focus:outline-none focus:bg-[#e8fc3b]/10 font-mono text-sm"
+              placeholder="e.g. AI Engineer"
             />
           </div>
           <button 

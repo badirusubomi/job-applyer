@@ -22,22 +22,22 @@ const FONTS = [
 
 const DEFAULT_PROFILE = `# Sample Profile
 
-**Name**: Alex Pro
-**Current Title**: Senior AI Engineer
-**Location**: San Francisco, CA
-**Email**: alex.pro@example.com
+**Name**: Jane Doe
+**Current Title**: Software Engineer
+**Location**: New York, NY
+**Email**: jane.doe@example.com
 
 ## Summary
-AI Engineer with 6+ years of experience building scalable ML systems...
+Software Engineer with experience building scalable systems and reliable web applications.
 
 ## Experience
-**Acme Corp — Lead AI Engineer** (Jan 2021 - Present)
-- Designed an intelligent automation system using LLMs, reducing manual workflows by 40%.
-- Deployed highly available RAG pipelines on AWS.
+**Acme Corp — Software Engineer** (Jan 2021 - Present)
+- Designed an intelligent automation system, reducing manual workflows by 40%.
+- Deployed highly available pipelines on AWS.
 
 ## Skills
 - **Languages**: Python, TypeScript, Go
-- **Frameworks**: Next.js, React, PyTorch
+- **Frameworks**: Next.js, React
 - **Cloud**: AWS, Docker, Kubernetes`;
 
 function loadData(key: string, defaultVal: any = null) {

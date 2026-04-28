@@ -19,6 +19,7 @@ db.exec(`
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
     url TEXT NOT NULL,
+    search_terms TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
 

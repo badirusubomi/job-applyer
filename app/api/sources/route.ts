@@ -21,12 +21,12 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const { name, url } = await req.json();
+    const { name, url, search_terms } = await req.json();
     if (!name || !url) return NextResponse.json({ error: 'Missing name or url' }, { status: 400 });
 
     const id = crypto.randomUUID();
-    const stmt = db.prepare('INSERT INTO sources (id, name, url) VALUES (?, ?, ?)');
-    stmt.run(id, name, url);
+    const stmt = db.prepare('INSERT INTO sources (id, name, url, search_terms) VALUES (?, ?, ?, ?)');
+    stmt.run(id, name, url, search_terms || null);
 
     const newSource = db.prepare('SELECT * FROM sources WHERE id = ?').get(id) as any;
     return NextResponse.json({ ...newSource, jobs: [] });

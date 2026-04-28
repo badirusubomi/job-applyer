@@ -2,17 +2,34 @@ import { NextResponse } from 'next/server';
 import db from '@/lib/db';
 import { scrapeJobs } from '@/lib/scraper';
 import { diffJobs, Job } from '@/lib/diff';
+import { getProvider, AIModelType } from '@/lib/ai/index';
 
 export async function POST(req: Request) {
   try {
-    const { sourceId } = await req.json();
+    const { sourceId, model, apiKey } = await req.json();
     if (!sourceId) return NextResponse.json({ error: 'Missing sourceId' }, { status: 400 });
 
     const source = db.prepare('SELECT * FROM sources WHERE id = ?').get(sourceId) as any;
     if (!source) return NextResponse.json({ error: 'Source not found' }, { status: 404 });
 
     const existingJobs = db.prepare('SELECT * FROM jobs WHERE source_id = ?').all(sourceId) as Job[];
-    const scrapedJobs = await scrapeJobs(source.url);
+    
+    let expandedTerms: string[] = [];
+    if (source.search_terms) {
+      if (model && apiKey) {
+        try {
+          const aiProvider = getProvider(model as AIModelType, apiKey);
+          expandedTerms = await aiProvider.expandSearchTerms(source.search_terms);
+        } catch (e) {
+          console.error("AI expansion failed, falling back to raw terms", e);
+          expandedTerms = source.search_terms.split(',').map((s: string) => s.trim());
+        }
+      } else {
+        expandedTerms = source.search_terms.split(',').map((s: string) => s.trim());
+      }
+    }
+
+    const scrapedJobs = await scrapeJobs(source.url, expandedTerms);
     
     // Process diff
     const newJobs = diffJobs(existingJobs, scrapedJobs, sourceId);
