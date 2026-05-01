@@ -69,6 +69,7 @@ function AssistantContent() {
   const [selectedModel, setSelectedModel] = useState<string>('gemini');
   const [questions, setQuestions] = useState<string>('');
   const [actions, setActions] = useState({ resume: true, coverLetter: true, answers: true });
+  const [sectionVisibility, setSectionVisibility] = useState({ summary: true, experience: true, education: true, skills: true, projects: true, customSections: true });
 
   const [sidebarTab, setSidebarTab] = useState<'build' | 'settings'>('build');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -186,6 +187,7 @@ function AssistantContent() {
       else if (unmaskedData.coverLetter && actions.coverLetter) setActiveTab('coverLetter');
       else if (unmaskedData.answers && actions.answers) setActiveTab('answers');
       setIsEditing(false);
+      setSectionVisibility({ summary: true, experience: true, education: true, skills: true, projects: true, customSections: true });
       addToast("Generation successful!", "success");
     } catch (err: any) {
       console.error(err);
@@ -195,11 +197,28 @@ function AssistantContent() {
     }
   };
 
+  const getFilteredResumeData = (rawContent: any) => {
+    if (!rawContent) return rawContent;
+    const raw = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
+    const filtered = { ...raw };
+    if (!sectionVisibility.summary) delete filtered.summary;
+    if (!sectionVisibility.experience) filtered.experience = [];
+    if (!sectionVisibility.education) filtered.education = [];
+    if (!sectionVisibility.skills) {
+      filtered.skills = [];
+      filtered.skillCategories = [];
+    }
+    if (!sectionVisibility.projects) filtered.projects = [];
+    if (!sectionVisibility.customSections) filtered.customSections = [];
+    return filtered;
+  };
+
   const handleDownload = async () => {
     const content = results?.[activeTab];
     if (!content || activeTab === 'answers') return;
 
     const font = FONTS.find(f => f.id === selectedFontId) || FONTS[0];
+    const dataToRender = activeTab === 'resume' ? getFilteredResumeData(content) : (typeof content === 'string' ? JSON.parse(content) : content);
 
     try {
       const resp = await fetch('/api/pdf', {
@@ -207,7 +226,7 @@ function AssistantContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           type: activeTab === 'resume' ? 'resume' : 'cover-letter',
-          data: typeof content === 'string' ? JSON.parse(content) : content,
+          data: dataToRender,
           fontConfig: { family: font.family, importUrl: font.importUrl }
         })
       });
@@ -218,7 +237,15 @@ function AssistantContent() {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${activeTab}.pdf`;
+      
+      let filename = `${activeTab}.pdf`;
+      const dateStr = new Date().toISOString().split('T')[0];
+      if (dataToRender?.name) {
+        const firstName = dataToRender.name.split(' ')[0].toLowerCase();
+        filename = `${activeTab}-${firstName}-${dateStr}.pdf`;
+      }
+      
+      link.download = filename;
       link.click();
       URL.revokeObjectURL(url);
     } catch (err: any) {
@@ -247,6 +274,7 @@ function AssistantContent() {
       if (results?.[activeTab] && activeTab !== 'answers' && !isEditing) {
         try {
           const raw = results[activeTab];
+          const dataToRender = activeTab === 'resume' ? getFilteredResumeData(raw) : (typeof raw === 'string' ? JSON.parse(raw) : raw);
           const font = FONTS.find(f => f.id === selectedFontId) || FONTS[0];
           
           const resp = await fetch('/api/pdf/preview', {
@@ -254,7 +282,7 @@ function AssistantContent() {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               type: activeTab === 'resume' ? 'resume' : 'cover-letter',
-              data: typeof raw === 'string' ? JSON.parse(raw) : raw,
+              data: dataToRender,
               fontConfig: { family: font.family, importUrl: font.importUrl }
             })
           });
@@ -266,7 +294,7 @@ function AssistantContent() {
       }
     };
     if (mounted) updatePreview();
-  }, [mounted, results, activeTab, isEditing, selectedFontId]);
+  }, [mounted, results, activeTab, isEditing, selectedFontId, sectionVisibility]);
 
   if (!mounted) {
     return (
@@ -540,6 +568,23 @@ function AssistantContent() {
                 >
                   {isEditing ? <><Save className="w-4 h-4 mr-2" /> Save & View</> : <><Pencil className="w-4 h-4 mr-2" /> Edit JSON</>}
                 </button>
+              )}
+
+              {activeTab === 'resume' && results?.resume && !isEditing && (
+                <div className="absolute bottom-6 left-8 z-10 flex flex-wrap items-center gap-2 p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-[60%]">
+                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 mr-2 border-r-2 border-black/20">Visibility</span>
+                  {['summary', 'experience', 'education', 'skills', 'projects', 'customSections'].map((sec) => (
+                    <label key={sec} className={`cursor-pointer px-3 py-1.5 border-2 border-black text-[10px] font-bold uppercase transition-colors ${sectionVisibility[sec as keyof typeof sectionVisibility] ? 'bg-black text-white hover:bg-black/80' : 'bg-[#f4f4f0] text-black/50 hover:bg-[#e8fc3b] hover:text-black'}`}>
+                      <input 
+                        type="checkbox" 
+                        className="hidden" 
+                        checked={sectionVisibility[sec as keyof typeof sectionVisibility]}
+                        onChange={(e) => setSectionVisibility(prev => ({ ...prev, [sec]: e.target.checked }))}
+                      />
+                      {sec}
+                    </label>
+                  ))}
+                </div>
               )}
 
               {activeTab !== 'answers' ? (

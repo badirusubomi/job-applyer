@@ -198,5 +198,14 @@
         {{/education}}
     </section>
     {{/education.length}}
+
+    {{#customSections.length}}
+    {{#customSections}}
+    <section>
+        <h2>{{title}}</h2>
+        <div class="summary" style="white-space: pre-wrap;">{{content}}</div>
+    </section>
+    {{/customSections}}
+    {{/customSections.length}}
 </body>
 </html>
