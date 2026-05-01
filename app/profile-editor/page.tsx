@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Save, Check, Plus, Trash2 } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Save, Check, Plus, Trash2, Upload, Loader2 } from 'lucide-react';
 
 export default function ProfileEditor() {
   const [profile, setProfile] = useState({
@@ -10,12 +10,69 @@ export default function ProfileEditor() {
     phone: '',
     location: '',
     summary: '',
-    experience: [] as { title: '', company: '', startDate: '', endDate: '', bullets: '' }[],
-    skills: [] as { category: '', skills: '' }[],
-    education: [] as { institution: '', degree: '', date: '' }[],
+    experience: [] as { title: string; company: string; startDate: string; endDate: string; bullets: string }[],
+    skills: [] as { category: string; skills: string }[],
+    education: [] as { institution: string; degree: string; date: string }[],
+    projects: [] as { name: string; description: string; link: string }[],
+    customSections: [] as { title: string; content: string }[],
   });
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const sessionStr = localStorage.getItem('assistant_session') || '{}';
+    const keysStr = localStorage.getItem('assistant_keys') || '{}';
+    const { selectedModel = 'openai' } = JSON.parse(sessionStr);
+    const keys = JSON.parse(keysStr);
+    const apiKey = selectedModel === 'openai' ? keys.openai : keys.gemini;
+
+    if (selectedModel !== 'local' && !apiKey) {
+      alert("Please configure an API key in the Assistant Settings first.");
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('model', selectedModel);
+    if (apiKey) formData.append('apiKey', apiKey);
+
+    try {
+      const res = await fetch('/api/profile/parse', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to parse resume');
+
+      setProfile(prev => ({
+        ...prev,
+        name: data.name || prev.name,
+        email: data.email || prev.email,
+        phone: data.phone || prev.phone,
+        location: data.location || prev.location,
+        summary: data.summary || prev.summary,
+        experience: data.experience?.length ? data.experience : prev.experience,
+        skills: data.skills?.length ? data.skills : prev.skills,
+        education: data.education?.length ? data.education : prev.education,
+        projects: data.projects?.length ? data.projects : prev.projects || [],
+        customSections: data.customSections?.length ? data.customSections : prev.customSections || [],
+      }));
+      
+      alert("Resume parsed successfully! Please review the extracted data.");
+    } catch (err: any) {
+      alert(err.message || "Failed to extract profile from PDF.");
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  };
 
   useEffect(() => {
     // Load existing form data or initialize from privacy vault
@@ -76,6 +133,17 @@ export default function ProfileEditor() {
       });
       markdown += '\n';
     }
+    if (profile.projects && profile.projects.length > 0) {
+      markdown += `## Projects\n`;
+      profile.projects.forEach(proj => {
+        markdown += `**${proj.name}**${proj.link ? ` (${proj.link})` : ''}\n${proj.description}\n\n`;
+      });
+    }
+    if (profile.customSections && profile.customSections.length > 0) {
+      profile.customSections.forEach(section => {
+        markdown += `## ${section.title}\n${section.content}\n\n`;
+      });
+    }
 
     localStorage.setItem('assistant_profile', markdown);
 
@@ -93,17 +161,28 @@ export default function ProfileEditor() {
             Edit your structured profile. Compiled to Markdown globally.
           </p>
         </div>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="px-6 py-4 bg-[#e8fc3b] text-black border-2 border-black font-bold uppercase tracking-wider hover:bg-black hover:text-[#e8fc3b] transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1 bg-white text-black placeholder:text-black/40"
-        >
-          {saved ? (
-            <><Check className="w-5 h-5 mr-3" /> SAVED STATUS</>
-          ) : (
-             <><Save className="w-5 h-5 mr-3" /> {saving ? 'SYNCING...' : 'COMMIT CHANGES'}</>
-          )}
-        </button>
+        <div className="flex gap-4">
+          <input type="file" accept="application/pdf" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="px-6 py-4 bg-white text-black border-2 border-black font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+          >
+            {uploading ? <Loader2 className="w-5 h-5 mr-3 animate-spin" /> : <Upload className="w-5 h-5 mr-3" />}
+            {uploading ? 'PARSING...' : 'UPLOAD PDF'}
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={saving || uploading}
+            className="px-6 py-4 bg-[#e8fc3b] text-black border-2 border-black font-bold uppercase tracking-wider hover:bg-black hover:text-[#e8fc3b] transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+          >
+            {saved ? (
+              <><Check className="w-5 h-5 mr-3" /> SAVED STATUS</>
+            ) : (
+               <><Save className="w-5 h-5 mr-3" /> {saving ? 'SYNCING...' : 'COMMIT CHANGES'}</>
+            )}
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-y-auto border-4 border-black bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 text-black">
@@ -167,7 +246,7 @@ export default function ProfileEditor() {
                 <button onClick={() => {
                   const newSkills = profile.skills.filter((_, i) => i !== index);
                   setProfile({...profile, skills: newSkills});
-                }} className="p-2 bg-[#ff5e5b] text-white border-2 border-black bg-white text-black placeholder:text-black/40"><Trash2 className="w-4 h-4" /></button>
+                }} className="p-2 bg-[#ff5e5b] text-white border-2 border-black hover:bg-black transition-colors"><Trash2 className="w-4 h-4" /></button>
               </div>
             ))}
           </section>
@@ -179,7 +258,7 @@ export default function ProfileEditor() {
               <button onClick={() => setProfile({...profile, experience: [...profile.experience, { title: '', company: '', startDate: '', endDate: '', bullets: '' }]})} className="text-xs bg-black text-white px-3 py-1 uppercase font-bold">+ Add Role</button>
             </div>
             {profile.experience.map((exp, index) => (
-              <div key={index} className="mb-6 p-4 border-2 border-black bg-[#f4f4f0] bg-white text-black placeholder:text-black/40">
+              <div key={index} className="mb-6 p-4 border-2 border-black bg-[#f4f4f0] text-black">
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <input type="text" placeholder="Job Title" value={exp.title} onChange={e => {
                     const newExp = [...profile.experience];
@@ -241,7 +320,68 @@ export default function ProfileEditor() {
                 <button onClick={() => {
                   const newEdu = profile.education.filter((_, i) => i !== index);
                   setProfile({...profile, education: newEdu});
-                }} className="p-2 bg-[#ff5e5b] text-white border-2 border-black bg-white text-black placeholder:text-black/40"><Trash2 className="w-4 h-4" /></button>
+                }} className="p-2 bg-[#ff5e5b] text-white border-2 border-black hover:bg-black transition-colors"><Trash2 className="w-4 h-4" /></button>
+              </div>
+            ))}
+          </section>
+
+          {/* Projects */}
+          <section>
+            <div className="flex justify-between items-center mb-4 border-b-2 border-black pb-2">
+              <h2 className="text-xl font-bold uppercase tracking-widest">Projects</h2>
+              <button onClick={() => setProfile({...profile, projects: [...(profile.projects || []), { name: '', description: '', link: '' }]})} className="text-xs bg-black text-white px-3 py-1 uppercase font-bold">+ Add Project</button>
+            </div>
+            {(profile.projects || []).map((proj, index) => (
+              <div key={index} className="mb-6 p-4 border-2 border-black bg-[#f4f4f0] text-black">
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <input type="text" placeholder="Project Name" value={proj.name} onChange={e => {
+                    const newProj = [...profile.projects];
+                    newProj[index].name = e.target.value as any;
+                    setProfile({...profile, projects: newProj});
+                  }} className="p-2 border-2 border-black text-sm bg-white text-black placeholder:text-black/40" />
+                  <input type="text" placeholder="Link (Optional)" value={proj.link} onChange={e => {
+                    const newProj = [...profile.projects];
+                    newProj[index].link = e.target.value as any;
+                    setProfile({...profile, projects: newProj});
+                  }} className="p-2 border-2 border-black text-sm bg-white text-black placeholder:text-black/40" />
+                </div>
+                <textarea placeholder="Description" value={proj.description} onChange={e => {
+                  const newProj = [...profile.projects];
+                  newProj[index].description = e.target.value as any;
+                  setProfile({...profile, projects: newProj});
+                }} className="w-full p-2 border-2 border-black text-sm h-24 mb-2 bg-white text-black placeholder:text-black/40" />
+                <button onClick={() => {
+                  const newProj = profile.projects.filter((_, i) => i !== index);
+                  setProfile({...profile, projects: newProj});
+                }} className="text-xs font-bold text-[#ff5e5b] uppercase">Remove Project</button>
+              </div>
+            ))}
+          </section>
+
+          {/* Custom Sections */}
+          <section>
+            <div className="flex justify-between items-center mb-4 border-b-2 border-black pb-2">
+              <h2 className="text-xl font-bold uppercase tracking-widest">Custom Sections</h2>
+              <button onClick={() => setProfile({...profile, customSections: [...(profile.customSections || []), { title: '', content: '' }]})} className="text-xs bg-black text-white px-3 py-1 uppercase font-bold">+ Add Section</button>
+            </div>
+            {(profile.customSections || []).map((section, index) => (
+              <div key={index} className="mb-6 p-4 border-2 border-black bg-[#f4f4f0] text-black">
+                <div className="mb-4">
+                  <input type="text" placeholder="Section Title (e.g. Volunteer Work)" value={section.title} onChange={e => {
+                    const newSec = [...profile.customSections];
+                    newSec[index].title = e.target.value as any;
+                    setProfile({...profile, customSections: newSec});
+                  }} className="w-full p-2 border-2 border-black text-sm bg-white text-black placeholder:text-black/40 font-bold uppercase" />
+                </div>
+                <textarea placeholder="Section Content" value={section.content} onChange={e => {
+                  const newSec = [...profile.customSections];
+                  newSec[index].content = e.target.value as any;
+                  setProfile({...profile, customSections: newSec});
+                }} className="w-full p-2 border-2 border-black text-sm h-32 mb-2 bg-white text-black placeholder:text-black/40" />
+                <button onClick={() => {
+                  const newSec = profile.customSections.filter((_, i) => i !== index);
+                  setProfile({...profile, customSections: newSec});
+                }} className="text-xs font-bold text-[#ff5e5b] uppercase">Remove Section</button>
               </div>
             ))}
           </section>

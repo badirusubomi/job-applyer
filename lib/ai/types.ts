@@ -24,4 +24,5 @@ export interface AIProvider {
   generateCoverLetter: (profile: string, jobInfo: JobInfo, template: string) => Promise<string>;
   generateAnswers: (profile: string, jobInfo: JobInfo, questions: string[]) => Promise<string>;
   expandSearchTerms: (terms: string) => Promise<string[]>;
+  extractProfile: (text: string) => Promise<any>;
 }

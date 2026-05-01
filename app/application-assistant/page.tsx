@@ -15,7 +15,7 @@ const FONT_KEY = 'assistant_font';
 const FONTS = [
   { id: 'mono', name: 'IBM Plex Mono (Classic)', family: "'IBM Plex Mono', monospace", importUrl: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;700&display=swap" },
   { id: 'inter', name: 'Inter (Modern Sans)', family: "'Inter', sans-serif", importUrl: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" },
-  { id: 'playfair', name: 'Playfair Display (Editorial)', family: "'Playfair Display', serif", importUrl: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&display=swap" },
+  { id: 'playfair', name: 'Playfair Display (Editorial)', family: "'Playfair Display', serif", importUrl: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" },
   { id: 'garamond', name: 'EB Garamond (Elegant)', family: "'EB Garamond', serif", importUrl: "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&display=swap" },
   { id: 'jetbrains', name: 'JetBrains Mono (Technical)', family: "'JetBrains Mono', monospace", importUrl: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" },
 ];
@@ -458,11 +458,17 @@ function AssistantContent() {
                 </h2>
                 <div className="font-mono">
                   <div>
-                    <label className="block text-[10px] font-bold uppercase tracking-wider mb-1">OpenAI API Key</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider">OpenAI API Key</label>
+                      <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">Get Key &rarr;</a>
+                    </div>
                     <input type="password" value={apiKeys.openai || ''} onChange={e => saveKeys({ ...apiKeys, openai: e.target.value })} className="w-full p-2 border-4 border-black focus:outline-none focus:bg-[#e8fc3b]/10 text-xs" placeholder="sk-..." />
                   </div>
                   <div className="mt-3">
-                    <label className="block text-[10px] font-bold uppercase tracking-wider mb-1">Gemini API Key</label>
+                    <div className="flex justify-between items-center mb-1">
+                      <label className="block text-[10px] font-bold uppercase tracking-wider">Gemini API Key</label>
+                      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">Get Key &rarr;</a>
+                    </div>
                     <input type="password" value={apiKeys.gemini || ''} onChange={e => saveKeys({ ...apiKeys, gemini: e.target.value })} className="w-full p-2 border-4 border-black focus:outline-none focus:bg-[#e8fc3b]/10 text-xs" placeholder="AIzaSy..." />
                   </div>
                 </div>

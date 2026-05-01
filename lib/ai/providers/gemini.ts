@@ -66,6 +66,7 @@ JOB REQUIREMENTS: ${JSON.stringify(jobInfo)}
 MATCHED STRENGTHS: ${JSON.stringify(matchInfo)}
 
 RULES:
+- CRITICAL: The entire output MUST be extremely concise to fit on one printed page. MAXIMUM 3 bullet points per experience. MAXIMUM 4 skills per category. MAXIMUM 350 words total.
 - DO NOT fabricate experience, companies, or roles
 - DO NOT use filler corporate-speak ("leveraged", "utilized", "synergized") — write like a real person
 - Rewrite bullet points to quantify impact where evidence of numbers exists in the profile
@@ -226,6 +227,35 @@ Return ONLY a JSON object with a single key "terms" containing an array of strin
     } catch {
       return [];
     }
+  },
+
+  async extractProfile(text: string): Promise<any> {
+    const prompt = `
+Extract the following candidate information from the provided resume text into a strictly formatted JSON object.
+
+Return ONLY a JSON object with this exact structure:
+{
+  "name": "string",
+  "email": "string",
+  "phone": "string",
+  "location": "string",
+  "summary": "string",
+  "experience": [{ "title": "string", "company": "string", "startDate": "string", "endDate": "string", "bullets": "string (all bullets combined with newlines)" }],
+  "skills": [{ "category": "string", "skills": "string (comma separated list)" }],
+  "education": [{ "institution": "string", "degree": "string", "date": "string" }]
+}
+
+Text:
+${text}
+    `;
+
+    const response = await ai.models.generateContent({
+      model: MODEL,
+      contents: prompt,
+      config: { responseMimeType: 'application/json' }
+    });
+
+    return JSON.parse(response.text || '{}');
   }
   };
 };
