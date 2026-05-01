@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Save, Check, Plus, Trash2, Upload, Loader2 } from 'lucide-react';
+import { useToast } from '../components/ToastProvider';
 
 export default function ProfileEditor() {
   const [profile, setProfile] = useState({
@@ -20,6 +21,7 @@ export default function ProfileEditor() {
   const [saved, setSaved] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { addToast } = useToast();
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -32,7 +34,7 @@ export default function ProfileEditor() {
     const apiKey = selectedModel === 'openai' ? keys.openai : keys.gemini;
 
     if (selectedModel !== 'local' && !apiKey) {
-      alert("Please configure an API key in the Assistant Settings first.");
+      addToast("Please configure an API key in the Assistant Settings first.", "error");
       return;
     }
 
@@ -65,9 +67,9 @@ export default function ProfileEditor() {
         customSections: data.customSections?.length ? data.customSections : prev.customSections || [],
       }));
       
-      alert("Resume parsed successfully! Please review the extracted data.");
+      addToast("Resume parsed successfully! Please review the extracted data.", "success");
     } catch (err: any) {
-      alert(err.message || "Failed to extract profile from PDF.");
+      addToast(err.message || "Failed to extract profile from PDF.", "error");
     } finally {
       setUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';

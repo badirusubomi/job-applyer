@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Sparkles, Loader2, Download, Pencil, Save, Settings as SettingsIcon, FileText, Trash2, Key, AlertTriangle, X, Type } from 'lucide-react';
+import { useToast } from '../components/ToastProvider';
 import Editor from '@monaco-editor/react';
 import { maskPii, unmaskPii, PrivacyConfig } from '@/lib/utils/privacy';
 
@@ -72,7 +73,7 @@ function AssistantContent() {
   const [sidebarTab, setSidebarTab] = useState<'build' | 'settings'>('build');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [toasts, setToasts] = useState<{ id: string, message: string, type: 'error' | 'success' }[]>([]);
+  const { addToast } = useToast();
   
   // Editor State
   const [isEditing, setIsEditing] = useState(false);
@@ -105,13 +106,7 @@ function AssistantContent() {
     }
   }, [urlParam]);
 
-  const addToast = (message: string, type: 'error' | 'success' = 'error') => {
-    const id = Math.random().toString(36).substring(7);
-    setToasts(prev => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 5000);
-  };
+
 
   const persistSession = useCallback((updates: object) => {
     if (typeof window === 'undefined') return;
@@ -284,17 +279,7 @@ function AssistantContent() {
   return (
     <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-[#e5e5df] text-black">
       
-      {/* Toast System */}
-      <div className="fixed top-6 right-6 z-[100] flex flex-col gap-3">
-        {toasts.map(toast => (
-          <div key={toast.id} className={`p-4 border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] flex items-center justify-between min-w-[300px] animate-in slide-in-from-right duration-300 ${toast.type === 'error' ? 'bg-[#ff5e5b] text-white' : 'bg-[#e8fc3b] text-black'}`}>
-            <span className="font-mono text-xs font-bold uppercase tracking-widest">{toast.message}</span>
-            <button onClick={() => setToasts(prev => prev.filter(t => t.id !== toast.id))} className="ml-4 hover:opacity-50">
-              <X className="w-4 h-4 stroke-[3]" />
-            </button>
-          </div>
-        ))}
-      </div>
+
 
       {/* Onboarding Modal */}
       {showOnboarding && (
@@ -475,8 +460,11 @@ function AssistantContent() {
               </div>
 
               <div className="mt-8 space-y-4 pt-4 border-t-4 border-black">
-                <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2">
+                <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2 group relative cursor-help">
                   <AlertTriangle className="w-4 h-4 mr-2 text-[#ff5e5b]" /> Vault Masks
+                  <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-black text-[#e8fc3b] text-[10px] font-bold leading-relaxed border-2 border-[#e8fc3b] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-[4px_4px_0px_0px_rgba(232,252,59,0.3)]">
+                    This implementation is optional and it just ensures anonymized data is sent to the LLMs.
+                  </div>
                 </h2>
                 <div className="flex flex-col gap-3 font-mono text-sm">
                   <div>
