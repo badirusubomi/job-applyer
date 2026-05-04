@@ -171,7 +171,7 @@ export default function ProfileEditor() {
             className="px-6 py-4 bg-white text-black border-2 border-black font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
           >
             {uploading ? <Loader2 className="w-5 h-5 mr-3 animate-spin" /> : <Upload className="w-5 h-5 mr-3" />}
-            {uploading ? 'PARSING...' : 'UPLOAD PDF'}
+            {uploading ? 'PARSING...' : 'UPLOAD RESUME'}
           </button>
           <button
             onClick={handleSave}

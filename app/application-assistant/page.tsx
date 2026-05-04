@@ -491,7 +491,7 @@ function AssistantContent() {
                 <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2 group relative cursor-help">
                   <AlertTriangle className="w-4 h-4 mr-2 text-[#ff5e5b]" /> Vault Masks
                   <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-black text-[#e8fc3b] text-[10px] font-bold leading-relaxed border-2 border-[#e8fc3b] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-[4px_4px_0px_0px_rgba(232,252,59,0.3)]">
-                    This implementation is optional and it just ensures anonymized data is sent to the LLMs.
+                    This implementation is optional and it just ensures anonymized data is sent to the AI Models.
                   </div>
                 </h2>
                 <div className="flex flex-col gap-3 font-mono text-sm">
