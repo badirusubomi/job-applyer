@@ -15,7 +15,10 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['pdf-parse', '@napi-rs/canvas', 'pdfjs-dist'],
+  serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
+  outputFileTracingIncludes: {
+    '/api/profile/parse': ['./node_modules/pdfjs-dist/legacy/build/**/*'],
+  },
   async headers() {
     return [
       {

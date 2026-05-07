@@ -3,19 +3,21 @@ import { getProvider, AIModelType } from '@/lib/ai/index';
 
 export async function POST(req: Request) {
   try {
-    // Polyfill DOMMatrix for pdfjs-dist (used by pdf-parse v2) in Node.js environment
-    if (typeof global.DOMMatrix === 'undefined') {
-      try {
-        const canvas = await import('@napi-rs/canvas');
-        (global as any).DOMMatrix = canvas.DOMMatrix;
-        (global as any).DOMPoint = canvas.DOMPoint;
-        (global as any).DOMRect = canvas.DOMRect;
-      } catch (e) {
-        console.warn('Failed to polyfill DOMMatrix from @napi-rs/canvas:', e);
-      }
+    // --- Serverless Compatibility Setup ---
+    // pdfjs-dist v5 (used by pdf-parse v2) tries to dynamically import
+    // `pdf.worker.mjs` at runtime. On Vercel, this file isn't included in the
+    // serverless bundle, causing a "Cannot find module" error.
+    //
+    // The fix: pdfjs-dist checks `globalThis.pdfjsWorker?.WorkerMessageHandler`
+    // BEFORE attempting the dynamic import. If we pre-load the worker module
+    // onto globalThis, the problematic import is skipped entirely.
+    if (!(globalThis as any).pdfjsWorker) {
+      const workerModule = await import('pdfjs-dist/legacy/build/pdf.worker.mjs');
+      (globalThis as any).pdfjsWorker = {
+        WorkerMessageHandler: workerModule.WorkerMessageHandler,
+      };
     }
 
-    // Load the library contextually
     const pdf = await import('pdf-parse');
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -36,9 +38,8 @@ export async function POST(req: Request) {
     // Extract raw text from PDF
     let rawText = '';
     try {
-      // Use the PDFParse class available in version 2.4.5
       const PDFParser = pdf.PDFParse;
-      
+
       if (!PDFParser) {
         throw new Error('PDFParse class not found in library');
       }
@@ -46,7 +47,7 @@ export async function POST(req: Request) {
       const parser = new PDFParser({ data: buffer });
       const parsedData = await parser.getText();
       rawText = parsedData.text || '';
-      
+
       // Clean up
       if (typeof parser.destroy === 'function') {
         await parser.destroy();
