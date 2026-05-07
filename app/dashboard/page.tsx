@@ -4,13 +4,16 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { Activity, Briefcase, FileText } from 'lucide-react';
 
+const STORAGE_KEY = 'applyer_sources';
+
 export default function Dashboard() {
   const [stats, setStats] = useState({ sources: 0, jobs: 0, newJobs: 0 });
 
   useEffect(() => {
-    fetch('/api/sources')
-      .then(res => res.json())
-      .then(data => {
+    const loadStats = () => {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
         if (Array.isArray(data)) {
           const sources = data.length;
           let jobs = 0;
@@ -21,12 +24,37 @@ export default function Dashboard() {
           });
           setStats({ sources, jobs, newJobs });
         }
-      });
+      }
+    };
+
+    loadStats();
+    // Listen for storage changes in other tabs
+    window.addEventListener('storage', loadStats);
+    return () => window.removeEventListener('storage', loadStats);
   }, []);
+
+  const acknowledgeAll = () => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      const updated = data.map((source: any) => ({
+        ...source,
+        jobs: source.jobs.map((job: any) => ({ ...job, is_new: false }))
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      
+      // Update local state
+      let jobs = 0;
+      updated.forEach((s: any) => {
+        jobs += s.jobs.length;
+      });
+      setStats({ sources: updated.length, jobs, newJobs: 0 });
+    }
+  };
 
   return (
     <div className="flex-1 p-8 lg:p-12 overflow-y-auto w-full text-black">
-      <h1 className="text-4xl lg:text-6xl font-black font-playfair tracking-tight mb-12">SYSTEM<br/>DASHBOARD</h1>
+      <h1 className="text-4xl lg:text-6xl font-black font-playfair tracking-tight mb-12 uppercase">Applyer<br/>Dashboard</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div className="bg-white p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-48 group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer">
@@ -56,19 +84,9 @@ export default function Dashboard() {
             </div>
             {stats.newJobs > 0 && (
               <button 
-                onClick={async (e) => {
+                onClick={(e) => {
                   e.stopPropagation();
-                  await fetch('/api/jobs/acknowledge', { method: 'POST' });
-                  // Re-fetch stats
-                  const res = await fetch('/api/sources');
-                  const data = await res.json();
-                  let jobs = 0;
-                  let newJobs = 0;
-                  data.forEach((s: any) => {
-                    jobs += s.jobs.length;
-                    newJobs += s.jobs.filter((j: any) => j.is_new).length;
-                  });
-                  setStats({ sources: data.length, jobs, newJobs });
+                  acknowledgeAll();
                 }}
                 className="text-[10px] font-mono font-bold bg-[#e8fc3b] text-black px-2 py-1 border border-black hover:bg-white transition-colors uppercase tracking-widest"
               >

@@ -160,7 +160,7 @@ export default function ProfileEditor() {
         <div>
           <h1 className="text-4xl lg:text-6xl font-black font-playfair tracking-tight text-black">PROFILE<br/>EDITOR</h1>
           <p className="font-mono text-sm uppercase tracking-widest text-black/60 mt-4 max-w-sm">
-            Edit your structured profile. Compiled to Markdown globally.
+            Edit your structured profile.
           </p>
         </div>
         <div className="flex gap-4">

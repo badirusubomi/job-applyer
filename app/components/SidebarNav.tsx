@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Activity, FileText, Briefcase, HelpCircle } from 'lucide-react';
+import { Activity, FileText, Briefcase, HelpCircle, Sparkles } from 'lucide-react';
 
 export default function SidebarNav() {
   const pathname = usePathname();
@@ -11,7 +11,7 @@ export default function SidebarNav() {
     { href: '/dashboard', label: 'Dashboard', icon: Activity },
     { href: '/job-watcher', label: 'Job Watcher', icon: Briefcase },
     { href: '/profile-editor', label: 'Profile Editor', icon: FileText },
-    { href: '/application-assistant', label: 'Assistant', icon: Activity },
+    { href: '/application-assistant', label: 'Assistant', icon: Sparkles },
   ];
 
   return (
@@ -36,14 +36,30 @@ export default function SidebarNav() {
         })}
       </nav>
 
-      <div className="p-4 border-t border-white/10 mt-auto">
+      <div className="p-4 border-t border-white/10 mt-auto space-y-2">
+        <a 
+          href='https://ko-fi.com/B0B81Z4K3J' 
+          target='_blank' 
+          rel="noopener noreferrer"
+          className="flex items-center px-4 py-2 transition-all hover:bg-white/5 border-2 border-transparent hover:border-white/10 group rounded-sm"
+        >
+          <img 
+            height='28' 
+            style={{ border: '0px', height: '28px' }} 
+            src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' 
+            alt='Ko-fi' 
+            className="flex-shrink-0"
+          />
+          
+        </a>
+
         <a
           href="mailto:badirusubomi@gmail.com"
-          className="flex items-center px-4 py-3 transition-all hover:bg-[#ff5e5b] hover:text-white border-2 border-transparent hover:border-black group relative overflow-hidden"
+          className="flex items-center px-4 py-3 transition-all hover:bg-[#ff5e5b] hover:text-white border-2 border-transparent hover:border-black group"
         >
           <HelpCircle className="w-5 h-5 mr-3 flex-shrink-0" />
-          <span className="opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-x-4 group-hover:translate-x-0 font-bold">
-            GET SUPPORT
+          <span className="text-[10px] font-mono font-bold uppercase tracking-widest">
+            Get Support
           </span>
         </a>
       </div>

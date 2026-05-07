@@ -313,7 +313,7 @@ function AssistantContent() {
       {showOnboarding && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4">
           <div className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] p-8 max-w-lg w-full">
-            <h2 className="text-2xl font-black font-playfair uppercase tracking-tight mb-4">Welcome to Job Assistant</h2>
+            <h2 className="text-2xl font-black font-playfair uppercase tracking-tight mb-4">Welcome to Applyer</h2>
             <p className="font-mono text-sm leading-relaxed mb-6">
               To get started, you'll need to configure an API key. For your security, keys are stored locally in your browser.
             </p>

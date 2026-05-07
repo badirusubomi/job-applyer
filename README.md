@@ -1,10 +1,10 @@
-# Job Application Assistant (JOB ASSIST)
+# Applyer
 
-An AI-powered automation system for managing, tracking, and completing job applications. JOB ASSIST uses local AI context matched with real-time job listings to streamline your career search.
+An AI-powered automation system for managing, tracking, and completing job applications. Applyer uses local AI context matched with real-time job listings to streamline your career search.
 
 ## 🚀 Overview
 
-JOB ASSIST is an editorial-style, high-fidelity dashboard built with **Next.js 14**, **Tailwind CSS**, and **OpenAI**. It specializes in:
+Applyer is an editorial-style, high-fidelity dashboard built with **Next.js 14**, **Tailwind CSS**, and **OpenAI**. It specializes in:
 
 - **AI-Driven Fact Matching**: Automatically extracts job requirements and matches them against your professional profile.
 - **Dynamic Content Generation**: Generates resumes, cover letters, and application answers on the fly.
@@ -28,7 +28,7 @@ JOB ASSIST is an editorial-style, high-fidelity dashboard built with **Next.js 1
 
 ## 🔒 Privacy & Security (Bring Your Own Key)
 
-JOB ASSIST is designed as a stateless, client-first application to maximize your privacy and security:
+Applyer is designed as a stateless, client-first application to maximize your privacy and security:
 
 - **BYOK (Bring Your Own Key)**: API keys are inputted in the browser and stored locally in your browser's `localStorage` — they are never saved to a database or server file. 
 - **PII Masking**: The system features a built-in privacy guard that masks your sensitive data (Name, Email, Phone, Address) with placeholders (e.g. `{{USER_NAME}}`) *before* sending context to any AI model. The real data is re-injected client-side when viewing or downloading the final PDF.

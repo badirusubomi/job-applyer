@@ -1,8 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, RefreshCw, ExternalLink, ChevronDown, ChevronRight, FileText } from 'lucide-react';
+import { Plus, RefreshCw, ExternalLink, ChevronDown, ChevronRight, FileText, Trash2 } from 'lucide-react';
 import Link from 'next/link';
+
+const STORAGE_KEY = 'applyer_sources';
 
 export default function JobWatcher() {
   const [sources, setSources] = useState<any[]>([]);
@@ -14,32 +16,54 @@ export default function JobWatcher() {
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
-    fetchSources();
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        setSources(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse sources", e);
+        setSources([]);
+      }
+    }
   }, []);
 
-  const fetchSources = async () => {
-    const res = await fetch('/api/sources');
-    const data = await res.json();
-    setSources(data);
+  const saveToStorage = (updatedSources: any[]) => {
+    setSources(updatedSources);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updatedSources));
+    // Trigger storage event for other components (like Dashboard)
+    window.dispatchEvent(new Event('storage'));
   };
 
   const addSource = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newName || !newUrl) return;
-    setLoading(true);
-    await fetch('/api/sources', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: newName, url: newUrl, search_terms: newSearchTerms })
-    });
+    
+    const newSource = {
+      id: crypto.randomUUID(),
+      name: newName,
+      url: newUrl,
+      search_terms: newSearchTerms,
+      jobs: [],
+      created_at: new Date().toISOString()
+    };
+
+    saveToStorage([...sources, newSource]);
     setNewName('');
     setNewUrl('');
     setNewSearchTerms('');
-    await fetchSources();
-    setLoading(false);
+  };
+
+  const deleteSource = (id: string) => {
+    if (confirm('Are you sure you want to delete this source?')) {
+      const updated = sources.filter(s => s.id !== id);
+      saveToStorage(updated);
+    }
   };
 
   const refreshSource = async (id: string) => {
+    const source = sources.find(s => s.id === id);
+    if (!source) return;
+
     setRefreshing(id);
     const sessionStr = localStorage.getItem('assistant_session') || '{}';
     const keysStr = localStorage.getItem('assistant_keys') || '{}';
@@ -47,13 +71,52 @@ export default function JobWatcher() {
     const keys = JSON.parse(keysStr);
     const apiKey = selectedModel === 'openai' ? keys.openai : keys.gemini;
 
-    await fetch('/api/sources/refresh', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sourceId: id, model: selectedModel, apiKey })
-    });
-    await fetchSources();
-    setRefreshing(null);
+    try {
+      const res = await fetch('/api/sources/refresh', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          url: source.url, 
+          searchTerms: source.search_terms,
+          model: selectedModel, 
+          apiKey 
+        })
+      });
+      
+      const data = await res.json();
+      
+      if (data.jobs) {
+        // Track existing job links to avoid duplicates
+        const existingJobLinks = new Set(source.jobs.map((j: any) => j.link));
+        const newJobs = data.jobs
+          .filter((j: any) => !existingJobLinks.has(j.link))
+          .map((j: any) => ({ 
+            ...j, 
+            id: crypto.randomUUID(), 
+            is_new: true, 
+            first_seen: new Date().toISOString() 
+          }));
+
+        const updatedSources = sources.map(s => 
+          s.id === id 
+            ? { ...s, jobs: [...newJobs, ...s.jobs] }
+            : s
+        );
+        saveToStorage(updatedSources);
+      }
+    } catch (err) {
+      console.error('Refresh failed:', err);
+    } finally {
+      setRefreshing(null);
+    }
+  };
+
+  const acknowledgeAll = () => {
+    const updated = sources.map(source => ({
+      ...source,
+      jobs: source.jobs.map((job: any) => ({ ...job, is_new: false }))
+    }));
+    saveToStorage(updated);
   };
 
   const toggleExpand = (id: string) => {
@@ -63,12 +126,9 @@ export default function JobWatcher() {
   return (
     <div className="flex-1 p-8 lg:p-12 overflow-y-auto w-full max-w-5xl mx-auto text-black">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
-        <h1 className="text-4xl lg:text-5xl font-black font-playfair tracking-tight uppercase">Radar Network</h1>
+        <h1 className="text-4xl lg:text-5xl font-black font-playfair tracking-tight uppercase">JOB BANK</h1>
         <button 
-          onClick={async () => {
-            await fetch('/api/jobs/acknowledge', { method: 'POST' });
-            await fetchSources();
-          }}
+          onClick={acknowledgeAll}
           className="px-6 py-2 bg-black text-white border-2 border-black font-bold uppercase tracking-widest text-xs hover:bg-[#e8fc3b] hover:text-black transition-colors shadow-[4px_4px_0px_0px_rgba(232,252,59,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
         >
           Acknowledge All
@@ -119,8 +179,12 @@ export default function JobWatcher() {
         </form>
       </div>
 
-      <div className="space-y-8">
-        {sources.map(source => (
+      <div className="space-y-8 pb-12">
+        {sources.length === 0 ? (
+          <div className="bg-white border-4 border-black p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <p className="font-mono text-black/50 uppercase tracking-widest font-bold">No active intel sources connected.</p>
+          </div>
+        ) : sources.map(source => (
           <div key={source.id} className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between p-6 bg-[#f4f4f0] border-b-4 border-black">
               <div className="flex items-center cursor-pointer flex-1 mb-4 sm:mb-0" onClick={() => toggleExpand(source.id)}>
@@ -132,7 +196,7 @@ export default function JobWatcher() {
                   </a>
                 </div>
               </div>
-              <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
                 <span className="text-sm font-mono font-bold bg-black text-white px-3 py-1 uppercase tracking-widest">
                   {source.jobs?.length || 0} hits
                 </span>
@@ -143,6 +207,12 @@ export default function JobWatcher() {
                 >
                   <RefreshCw className={`w-4 h-4 mr-2 stroke-[3] ${refreshing === source.id ? 'animate-spin' : ''}`} />
                   Scan
+                </button>
+                <button
+                  onClick={() => deleteSource(source.id)}
+                  className="p-2 bg-white border-2 border-black hover:bg-red-500 hover:text-white transition-colors shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-0.5 active:translate-x-0.5"
+                >
+                  <Trash2 className="w-4 h-4 stroke-[2.5]" />
                 </button>
               </div>
             </div>
@@ -157,7 +227,7 @@ export default function JobWatcher() {
                       <div className="mb-4 sm:mb-0">
                         <a href={job.link} target="_blank" rel="noreferrer" className="text-xl font-bold hover:text-blue-600 uppercase tracking-tight flex items-center">
                           {job.title}
-                          {job.is_new === 1 && (
+                          {job.is_new && (
                             <span className="ml-4 px-2 py-0.5 bg-[#e8fc3b] text-black border border-black text-xs font-black tracking-widest">NEW INTEL</span>
                           )}
                         </a>

@@ -10,7 +10,7 @@ const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfa
 const plexMono = IBM_Plex_Mono({ weight: ['400', '500', '600', '700'], subsets: ['latin'], variable: '--font-plex' });
 
 export const metadata: Metadata = {
-  title: 'Job Application Assistant',
+  title: 'Applyer',
   description: 'Local AI-powered job application automation',
 };
 
@@ -26,7 +26,7 @@ export default function RootLayout({
           {/* Sidebar */}
         <aside className="w-64 bg-black border-r-4 border-black text-white flex flex-col uppercase tracking-wider text-sm font-semibold">
           <div className="h-16 flex items-center px-6 border-b-2 border-white/20">
-            <h1 className="text-2xl font-black font-playfair tracking-tighter">JOB ASSIST</h1>
+            <h1 className="text-2xl font-black font-playfair tracking-tighter">APPLYER</h1>
           </div>
           <SidebarNav />
         </aside>

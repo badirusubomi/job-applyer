@@ -4,7 +4,7 @@ const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net;
   style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://fonts.googleapis.com;
-  img-src 'self' blob: data:;
+  img-src 'self' blob: data: https://storage.ko-fi.com;
   font-src 'self' https://cdn.jsdelivr.net https://fonts.gstatic.com;
   object-src 'none';
   base-uri 'self';
