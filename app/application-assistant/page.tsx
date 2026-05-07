@@ -581,7 +581,7 @@ function AssistantContent() {
                         checked={sectionVisibility[sec as keyof typeof sectionVisibility]}
                         onChange={(e) => setSectionVisibility(prev => ({ ...prev, [sec]: e.target.checked }))}
                       />
-                      {sec}
+                      {sec === 'customSections' ? 'Custom Sections' : sec.toUpperCase()}
                     </label>
                   ))}
                 </div>
