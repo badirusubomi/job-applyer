@@ -149,7 +149,7 @@ export default function JobWatcher() {
             />
           </div>
           <div className="flex-1 w-full">
-            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Source URL</label>
+            <label className="block text-xs font-mono uppercase tracking-widest font-bold text-black/60 mb-2">Board URL</label>
             <input 
               type="url" 
               value={newUrl} 
@@ -182,7 +182,7 @@ export default function JobWatcher() {
       <div className="space-y-8 pb-12">
         {sources.length === 0 ? (
           <div className="bg-white border-4 border-black p-12 text-center shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-            <p className="font-mono text-black/50 uppercase tracking-widest font-bold">No active intel sources connected.</p>
+            <p className="font-mono text-black/50 uppercase tracking-widest font-bold">No active Job sources connected.</p>
           </div>
         ) : sources.map(source => (
           <div key={source.id} className="bg-white border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">

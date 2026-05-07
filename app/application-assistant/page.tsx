@@ -360,7 +360,7 @@ function AssistantContent() {
       </div>
 
       {/* Secondary Sidebar Content based on Sidebar Tab */}
-      <div className="w-full lg:w-[340px] lg:flex-shrink-0 flex flex-col border-r-4 border-black bg-[#f4f4f0] overflow-y-auto min-h-0 flex-1 lg:flex-none">
+      <div className="w-full lg:w-[340px] lg:flex-shrink-0 flex flex-col border-b-4 lg:border-b-0 border-r-0 lg:border-r-4 border-black bg-[#f4f4f0] overflow-y-auto min-h-0 flex-1 lg:flex-none">
         <div className="p-8 border-b-4 border-black bg-white flex-shrink-0">
           <h1 className="text-2xl font-black font-playfair tracking-tight uppercase">
             {sidebarTab === 'build' ? 'Assistant' : 'Options'}
@@ -370,7 +370,7 @@ function AssistantContent() {
           </p>
         </div>
         
-        <div className="p-6 flex flex-col gap-6">
+        <div className="p-6 pb-24 lg:pb-6 flex flex-col gap-6">
           {sidebarTab === 'build' ? (
             <>
               <div>

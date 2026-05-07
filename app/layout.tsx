@@ -19,7 +19,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${plexMono.className} ${playfair.variable} bg-[#f4f4f0] text-black flex h-screen overflow-hidden antialiased`}>
+      <body className={`${plexMono.className} ${playfair.variable} bg-[#f4f4f0] text-black flex h-[100dvh] overflow-hidden antialiased`}>
         <ToastProvider>
           {/* Sidebar — hidden on mobile, visible on lg+ */}
           <SidebarNav />

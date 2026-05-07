@@ -72,7 +72,7 @@ export default function Dashboard() {
             <Briefcase className="w-6 h-6" />
           </div>
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-black/60 mb-1">Raw Jobs</p>
+            <p className="font-mono text-xs uppercase tracking-widest text-black/60 mb-1">Jobs</p>
             <h2 className="text-4xl font-black font-playfair">{stats.jobs}</h2>
           </div>
         </div>
