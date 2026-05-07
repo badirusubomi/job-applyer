@@ -1,8 +1,6 @@
 import type { Metadata } from 'next';
 import { Playfair_Display, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
-import Link from 'next/link';
-import { Activity, FileText, Briefcase } from 'lucide-react';
 import SidebarNav from './components/SidebarNav';
 import { ToastProvider } from './components/ToastProvider';
 
@@ -23,18 +21,13 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${plexMono.className} ${playfair.variable} bg-[#f4f4f0] text-black flex h-screen overflow-hidden antialiased`}>
         <ToastProvider>
-          {/* Sidebar */}
-        <aside className="w-64 bg-black border-r-4 border-black text-white flex flex-col uppercase tracking-wider text-sm font-semibold">
-          <div className="h-16 flex items-center px-6 border-b-2 border-white/20">
-            <h1 className="text-2xl font-black font-playfair tracking-tighter">APPLYER</h1>
-          </div>
+          {/* Sidebar — hidden on mobile, visible on lg+ */}
           <SidebarNav />
-        </aside>
 
-        {/* Main Content */}
-        <main className="flex-1 flex flex-col overflow-hidden bg-[#e5e5df]">
-          {children}
-        </main>
+          {/* Main Content — full width on mobile, flex-1 on desktop */}
+          <main className="flex-1 flex flex-col overflow-hidden bg-[#e5e5df] w-full">
+            {children}
+          </main>
         </ToastProvider>
       </body>
     </html>

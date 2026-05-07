@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
-import { Sparkles, Loader2, Download, Pencil, Save, Settings as SettingsIcon, FileText, Trash2, Key, AlertTriangle, X, Type } from 'lucide-react';
+import { Sparkles, Loader2, Download, Pencil, Save, Settings as SettingsIcon, FileText, Trash2, Key, AlertTriangle, X, Type, ChevronDown, ChevronUp, Cpu } from 'lucide-react';
 import { useToast } from '../components/ToastProvider';
 import Editor from '@monaco-editor/react';
 import { maskPii, unmaskPii, PrivacyConfig } from '@/lib/utils/privacy';
@@ -66,7 +66,7 @@ function AssistantContent() {
   const [jobDescription, setJobDescription] = useState<string>(urlParam || '');
   const [activeTab, setActiveTab] = useState<'resume' | 'coverLetter' | 'answers'>('resume');
   const [results, setResults] = useState<any>(null);
-  const [selectedModel, setSelectedModel] = useState<string>('gemini');
+  const [selectedModel, setSelectedModel] = useState<string>('openai');
   const [questions, setQuestions] = useState<string>('');
   const [actions, setActions] = useState({ resume: true, coverLetter: true, answers: true });
   const [sectionVisibility, setSectionVisibility] = useState({ summary: true, experience: true, education: true, skills: true, projects: true, customSections: true });
@@ -80,6 +80,7 @@ function AssistantContent() {
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [previewHtml, setPreviewHtml] = useState<string | null>(null);
+  const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   // LOAD FROM LOCALSTORAGE AFTER MOUNT
   useEffect(() => {
@@ -305,7 +306,7 @@ function AssistantContent() {
   }
 
   return (
-    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-[#e5e5df] text-black">
+    <div className="flex flex-col lg:flex-row h-full overflow-hidden bg-[#e5e5df] text-black pt-14 lg:pt-0">
       
 
 
@@ -346,25 +347,26 @@ function AssistantContent() {
       )}
 
       {/* Main Sidebar */}
-      <div className="w-20 lg:w-24 border-r-4 border-black bg-white flex flex-col flex-shrink-0 z-10 relative">
-        <button onClick={() => setSidebarTab('build')} className={`flex-1 flex flex-col items-center justify-center p-4 border-b-4 border-black transition-colors ${sidebarTab === 'build' ? 'bg-[#e8fc3b]' : 'hover:bg-[#f4f4f0]'}`}>
-          <FileText className="w-6 h-6 stroke-[2]" />
-          <span className="text-[10px] font-bold font-mono uppercase mt-2">Build</span>
+      {/* Icon sidebar — horizontal on mobile, vertical on desktop */}
+      <div className="flex flex-row lg:flex-col w-full lg:w-24 border-b-4 lg:border-b-0 lg:border-r-4 border-black bg-white flex-shrink-0 z-10 relative">
+        <button onClick={() => setSidebarTab('build')} className={`flex-1 flex flex-col items-center justify-center p-3 lg:p-4 border-r-4 lg:border-r-0 lg:border-b-4 border-black transition-colors ${sidebarTab === 'build' ? 'bg-[#e8fc3b]' : 'hover:bg-[#f4f4f0]'}`}>
+          <FileText className="w-5 h-5 lg:w-6 lg:h-6 stroke-[2]" />
+          <span className="text-[9px] lg:text-[10px] font-bold font-mono uppercase mt-1 lg:mt-2">Build</span>
         </button>
-        <button onClick={() => setSidebarTab('settings')} className={`flex-1 flex flex-col items-center justify-center p-4 border-black transition-colors ${sidebarTab === 'settings' ? 'bg-[#ff5e5b] text-white' : 'hover:bg-[#f4f4f0]'}`}>
-          <SettingsIcon className="w-6 h-6 stroke-[2]" />
-          <span className="text-[10px] font-bold font-mono uppercase mt-2">Options</span>
+        <button onClick={() => setSidebarTab('settings')} className={`flex-1 flex flex-col items-center justify-center p-3 lg:p-4 border-black transition-colors ${sidebarTab === 'settings' ? 'bg-[#ff5e5b] text-white' : 'hover:bg-[#f4f4f0]'}`}>
+          <SettingsIcon className="w-5 h-5 lg:w-6 lg:h-6 stroke-[2]" />
+          <span className="text-[9px] lg:text-[10px] font-bold font-mono uppercase mt-1 lg:mt-2">Options</span>
         </button>
       </div>
 
       {/* Secondary Sidebar Content based on Sidebar Tab */}
-      <div className="w-full lg:w-[340px] flex-shrink-0 flex flex-col border-r-4 border-black bg-[#f4f4f0] overflow-y-auto">
+      <div className="w-full lg:w-[340px] lg:flex-shrink-0 flex flex-col border-r-4 border-black bg-[#f4f4f0] overflow-y-auto min-h-0 flex-1 lg:flex-none">
         <div className="p-8 border-b-4 border-black bg-white flex-shrink-0">
           <h1 className="text-2xl font-black font-playfair tracking-tight uppercase">
             {sidebarTab === 'build' ? 'Assistant' : 'Options'}
           </h1>
           <p className="font-mono text-xs uppercase tracking-widest text-black/60 mt-3">
-            {sidebarTab === 'build' ? 'Synthesize context.' : 'Configure environment.'}
+            {sidebarTab === 'build' ? '' : 'Configure environment.'}
           </p>
         </div>
         
@@ -380,28 +382,6 @@ function AssistantContent() {
                   rows={7}
                   placeholder="Paste the full job description here..."
                 />
-              </div>
-
-              <div className="border-y-4 border-black py-5 space-y-3">
-                <h3 className="text-xs font-mono uppercase tracking-widest font-bold text-black/60">AI Model:</h3>
-                <div className="flex flex-col space-y-2">
-                  {(['gemini', 'openai', 'local'] as const).map(m => (
-                    <label key={m} className={`flex items-center space-x-3 group ${m === 'local' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
-                      <input
-                        type="radio"
-                        value={m}
-                        checked={selectedModel === m}
-                        onChange={e => m !== 'local' && setSelectedModel(e.target.value)}
-                        disabled={m === 'local'}
-                        name="modelSelect"
-                        className="appearance-none w-4 h-4 border-2 border-black checked:bg-black checked:border-black flex-shrink-0 disabled:bg-gray-300"
-                      />
-                      <span className="text-sm font-bold uppercase tracking-widest group-hover:bg-[#e8fc3b] px-1">
-                        {m === 'gemini' ? 'Gemini' : m === 'openai' ? 'OpenAI' : 'Local Node (Requires local install)'}
-                      </span>
-                    </label>
-                  ))}
-                </div>
               </div>
 
               <div className="space-y-3">
@@ -446,8 +426,33 @@ function AssistantContent() {
             </>
           ) : (
             <>
-              {/* Aesthetics Section inside Secondary Sidebar */}
+              {/* AI Model Selection */}
               <div className="space-y-4">
+                <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2">
+                  <Cpu className="w-4 h-4 mr-2" /> AI Model
+                </h2>
+                <div className="flex flex-col space-y-2">
+                  {(['gemini', 'openai', 'local'] as const).map(m => (
+                    <label key={m} className={`flex items-center space-x-3 group ${m === 'local' ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}`}>
+                      <input
+                        type="radio"
+                        value={m}
+                        checked={selectedModel === m}
+                        onChange={e => m !== 'local' && setSelectedModel(e.target.value)}
+                        disabled={m === 'local'}
+                        name="modelSelect"
+                        className="appearance-none w-4 h-4 border-2 border-black checked:bg-black checked:border-black flex-shrink-0 disabled:bg-gray-300"
+                      />
+                      <span className="text-sm font-bold uppercase tracking-widest group-hover:bg-[#e8fc3b] px-1">
+                        {m === 'gemini' ? 'Gemini' : m === 'openai' ? 'OpenAI' : 'Local (Coming Soon)'}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {/* Typography Section */}
+              <div className="mt-8 space-y-4 pt-4 border-t-4 border-black">
                 <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2">
                   <Type className="w-4 h-4 mr-2" /> Typography
                 </h2>
@@ -467,7 +472,7 @@ function AssistantContent() {
 
               <div className="mt-8 space-y-4 pt-4 border-t-4 border-black">
                 <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2">
-                  <Key className="w-4 h-4 mr-2" /> Local Core
+                  <Key className="w-4 h-4 mr-2" /> API Keys
                 </h2>
                 <div className="font-mono">
                   <div>
@@ -489,7 +494,7 @@ function AssistantContent() {
 
               <div className="mt-8 space-y-4 pt-4 border-t-4 border-black">
                 <h2 className="text-sm font-bold font-mono uppercase tracking-widest flex items-center border-b-4 border-black pb-2 group relative cursor-help">
-                  <AlertTriangle className="w-4 h-4 mr-2 text-[#ff5e5b]" /> Vault Masks
+                  <AlertTriangle className="w-4 h-4 mr-2 text-[#ff5e5b]" /> Info Masks
                   <div className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-black text-[#e8fc3b] text-[10px] font-bold leading-relaxed border-2 border-[#e8fc3b] opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50 shadow-[4px_4px_0px_0px_rgba(232,252,59,0.3)]">
                     This implementation is optional and it just ensures anonymized data is sent to the AI Models.
                   </div>
@@ -516,7 +521,7 @@ function AssistantContent() {
 
               <div className="mt-8 pt-4 border-t-4 border-black">
                 <button onClick={clearAllData} className="w-full p-3 bg-[#fa4642] text-white font-bold font-mono text-[10px] shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] uppercase tracking-wider border-4 border-black hover:translate-y-1 hover:shadow-none transition-all flex justify-center items-center">
-                  <Trash2 className="w-3 h-3 mr-2" /> Erase Vault
+                  <Trash2 className="w-3 h-3 mr-2" /> Clear Profile
                 </button>
               </div>
             </>
@@ -566,24 +571,34 @@ function AssistantContent() {
                     isEditing ? 'bg-[#ff5e5b] text-white border-black hover:bg-black' : 'bg-[#e8fc3b] text-black border-black hover:bg-black hover:text-[#e8fc3b]'
                   }`}
                 >
-                  {isEditing ? <><Save className="w-4 h-4 mr-2" /> Save & View</> : <><Pencil className="w-4 h-4 mr-2" /> Edit JSON</>}
+                  {isEditing ? <><Save className="w-4 h-4 mr-2" /> Save & View</> : <><Pencil className="w-4 h-4 mr-2" /> Edit</>}
                 </button>
               )}
 
               {activeTab === 'resume' && results?.resume && !isEditing && (
-                <div className="absolute bottom-6 left-8 z-10 flex flex-wrap items-center gap-2 p-2 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-[60%]">
-                  <span className="text-[10px] font-bold uppercase tracking-widest px-2 mr-2 border-r-2 border-black/20">Visibility</span>
-                  {['summary', 'experience', 'education', 'skills', 'projects', 'customSections'].map((sec) => (
-                    <label key={sec} className={`cursor-pointer px-3 py-1.5 border-2 border-black text-[10px] font-bold uppercase transition-colors ${sectionVisibility[sec as keyof typeof sectionVisibility] ? 'bg-black text-white hover:bg-black/80' : 'bg-[#f4f4f0] text-black/50 hover:bg-[#e8fc3b] hover:text-black'}`}>
-                      <input 
-                        type="checkbox" 
-                        className="hidden" 
-                        checked={sectionVisibility[sec as keyof typeof sectionVisibility]}
-                        onChange={(e) => setSectionVisibility(prev => ({ ...prev, [sec]: e.target.checked }))}
-                      />
-                      {sec === 'customSections' ? 'Custom Sections' : sec.toUpperCase()}
-                    </label>
-                  ))}
+                <div className="absolute bottom-4 left-4 lg:bottom-6 lg:left-8 z-10 bg-white border-4 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] max-w-[90%] lg:max-w-[60%]">
+                  <button
+                    onClick={() => setVisibilityOpen(v => !v)}
+                    className="flex items-center justify-between w-full px-3 py-2 text-[10px] font-bold uppercase tracking-widest hover:bg-[#f4f4f0] transition-colors"
+                  >
+                    <span>Visibility</span>
+                    {visibilityOpen ? <ChevronDown className="w-3 h-3 ml-2" /> : <ChevronUp className="w-3 h-3 ml-2" />}
+                  </button>
+                  {visibilityOpen && (
+                    <div className="flex flex-wrap items-center gap-2 p-2 border-t-2 border-black/20">
+                      {['summary', 'experience', 'education', 'skills', 'projects', 'customSections'].map((sec) => (
+                        <label key={sec} className={`cursor-pointer px-3 py-1.5 border-2 border-black text-[10px] font-bold uppercase transition-colors ${sectionVisibility[sec as keyof typeof sectionVisibility] ? 'bg-black text-white hover:bg-black/80' : 'bg-[#f4f4f0] text-black/50 hover:bg-[#e8fc3b] hover:text-black'}`}>
+                          <input 
+                            type="checkbox" 
+                            className="hidden" 
+                            checked={sectionVisibility[sec as keyof typeof sectionVisibility]}
+                            onChange={(e) => setSectionVisibility(prev => ({ ...prev, [sec]: e.target.checked }))}
+                          />
+                          {sec === 'customSections' ? 'Custom' : sec.toUpperCase()}
+                        </label>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -155,33 +155,33 @@ export default function ProfileEditor() {
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-[#f4f4f0] p-6 lg:p-12 overflow-hidden">
-      <div className="flex items-end justify-between mb-8 flex-shrink-0">
+    <div className="flex-1 flex flex-col h-full bg-[#f4f4f0] p-4 pt-16 lg:pt-6 lg:p-12 overflow-hidden">
+      <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4 mb-6 lg:mb-8 flex-shrink-0">
         <div>
-          <h1 className="text-4xl lg:text-6xl font-black font-playfair tracking-tight text-black">PROFILE<br/>EDITOR</h1>
-          <p className="font-mono text-sm uppercase tracking-widest text-black/60 mt-4 max-w-sm">
+          <h1 className="text-3xl lg:text-6xl font-black font-playfair tracking-tight text-black">PROFILE<br/>EDITOR</h1>
+          <p className="font-mono text-xs lg:text-sm uppercase tracking-widest text-black/60 mt-2 lg:mt-4 max-w-sm">
             Edit your structured profile.
           </p>
         </div>
-        <div className="flex gap-4">
+        <div className="flex gap-2 lg:gap-4">
           <input type="file" accept="application/pdf" className="hidden" ref={fileInputRef} onChange={handleFileUpload} />
           <button
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="px-6 py-4 bg-white text-black border-2 border-black font-bold uppercase tracking-wider hover:bg-black hover:text-white transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+            className="px-3 py-2 lg:px-6 lg:py-4 bg-white text-black border-2 border-black font-bold uppercase tracking-wider text-xs lg:text-sm hover:bg-black hover:text-white transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
           >
-            {uploading ? <Loader2 className="w-5 h-5 mr-3 animate-spin" /> : <Upload className="w-5 h-5 mr-3" />}
+            {uploading ? <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3 animate-spin" /> : <Upload className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" />}
             {uploading ? 'PARSING...' : 'PARSE RESUME'}
           </button>
           <button
             onClick={handleSave}
             disabled={saving || uploading}
-            className="px-6 py-4 bg-[#e8fc3b] text-black border-2 border-black font-bold uppercase tracking-wider hover:bg-black hover:text-[#e8fc3b] transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
+            className="px-3 py-2 lg:px-6 lg:py-4 bg-[#e8fc3b] text-black border-2 border-black font-bold uppercase tracking-wider text-xs lg:text-sm hover:bg-black hover:text-[#e8fc3b] transition-colors flex items-center shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] active:shadow-none active:translate-y-1 active:translate-x-1"
           >
             {saved ? (
-              <><Check className="w-5 h-5 mr-3" /> SAVED STATUS</>
+              <><Check className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" /> SAVED</>
             ) : (
-               <><Save className="w-5 h-5 mr-3" /> {saving ? 'SYNCING...' : 'SAVE CHANGES'}</>
+               <><Save className="w-4 h-4 lg:w-5 lg:h-5 mr-2 lg:mr-3" /> {saving ? 'SYNCING...' : 'SAVE'}</>
             )}
           </button>
         </div>

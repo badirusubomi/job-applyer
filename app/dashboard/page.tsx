@@ -53,8 +53,8 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="flex-1 p-8 lg:p-12 overflow-y-auto w-full text-black">
-      <h1 className="text-4xl lg:text-6xl font-black font-playfair tracking-tight mb-12 uppercase">Applyer<br/>Dashboard</h1>
+    <div className="flex-1 p-4 pt-16 lg:pt-8 lg:p-12 overflow-y-auto w-full text-black">
+      <h1 className="text-3xl lg:text-6xl font-black font-playfair tracking-tight mb-8 lg:mb-12 uppercase">Applyer<br/>Dashboard</h1>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
         <div className="bg-white p-8 border-4 border-black shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] flex flex-col justify-between h-48 group hover:-translate-y-1 hover:-translate-x-1 hover:shadow-[12px_12px_0px_0px_rgba(0,0,0,1)] transition-all cursor-pointer">
