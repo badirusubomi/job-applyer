@@ -15,7 +15,7 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['pdf-parse'],
+  serverExternalPackages: ['pdf-parse', '@napi-rs/canvas', 'pdfjs-dist'],
   async headers() {
     return [
       {

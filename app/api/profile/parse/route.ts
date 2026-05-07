@@ -6,7 +6,7 @@ export async function POST(req: Request) {
     // Polyfill DOMMatrix for pdfjs-dist (used by pdf-parse v2) in Node.js environment
     if (typeof global.DOMMatrix === 'undefined') {
       try {
-        const canvas = require('@napi-rs/canvas');
+        const canvas = await import('@napi-rs/canvas');
         (global as any).DOMMatrix = canvas.DOMMatrix;
         (global as any).DOMPoint = canvas.DOMPoint;
         (global as any).DOMRect = canvas.DOMRect;
@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     }
 
     // Load the library contextually
-    const pdf = require('pdf-parse');
+    const pdf = await import('pdf-parse');
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const model = formData.get('model') as string;
