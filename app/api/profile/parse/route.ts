@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
-const pdf = require('pdf-parse');
 import { getProvider, AIModelType } from '@/lib/ai/index';
 
 export async function POST(req: Request) {
   try {
+    // Load the library contextually
+    const pdf = require('pdf-parse');
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const model = formData.get('model') as string;
@@ -22,19 +23,31 @@ export async function POST(req: Request) {
 
     // Extract raw text from PDF
     let rawText = '';
-    if (pdf.PDFParse) {
-      const parser = new pdf.PDFParse({ data: buffer });
+    try {
+      // Use the PDFParse class available in version 2.4.5
+      const PDFParser = pdf.PDFParse;
+      
+      if (!PDFParser) {
+        throw new Error('PDFParse class not found in library');
+      }
+
+      const parser = new PDFParser({ data: buffer });
       const parsedData = await parser.getText();
-      rawText = parsedData.text;
-      await parser.destroy();
-    } else {
-      const parsePdf = typeof pdf === 'function' ? pdf : pdf.default;
-      const parsedData = await parsePdf(buffer);
-      rawText = parsedData.text;
+      rawText = parsedData.text || '';
+      
+      // Clean up
+      if (typeof parser.destroy === 'function') {
+        await parser.destroy();
+      }
+    } catch (err: any) {
+      console.error('PDF Text Extraction Error:', err);
+      return NextResponse.json({ 
+        error: 'Failed to extract text from PDF. Ensure it is not password protected or corrupted.' 
+      }, { status: 500 });
     }
 
     if (!rawText || rawText.trim() === '') {
-      return NextResponse.json({ error: 'Could not extract text from PDF' }, { status: 400 });
+      return NextResponse.json({ error: 'Could not extract any text from the provided PDF.' }, { status: 400 });
     }
 
     // Pass to AI Provider to extract structured profile
@@ -43,7 +56,7 @@ export async function POST(req: Request) {
 
     return NextResponse.json(profileJson);
   } catch (error: any) {
-    console.error('PDF parsing error:', error);
-    return NextResponse.json({ error: error.message || 'Failed to parse PDF' }, { status: 500 });
+    console.error('Profile parsing handler error:', error);
+    return NextResponse.json({ error: error.message || 'An unexpected error occurred during profile parsing' }, { status: 500 });
   }
 }
