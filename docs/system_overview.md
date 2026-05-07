@@ -1,6 +1,6 @@
-# System Overview: JOB ASSIST
+# System Overview: APPLYER
 
-JOB ASSIST is an AI-powered, client-first application designed to automate job applications while maintaining absolute user privacy through a stateless "Bring Your Own Key" (BYOK) architecture.
+APPLYER is an AI-powered, client-first application designed to automate job applications while maintaining absolute user privacy through a stateless "Bring Your Own Key" (BYOK) architecture.
 
 ## Macro-Architecture
 
@@ -10,13 +10,17 @@ The system is built with Next.js (App Router) and operates as a stateless engine
 
 1.  **Stateless AI Engine (`/lib/ai/`)**:
     -   Utilizes provider factories to initialize OpenAI, Gemini, or Local LLM instances using dynamic keys provided by the client.
-2.  **Privacy Guard (`/lib/utils/privacy.ts`)**:
+2.  **JOB BANK (Radar Network)**:
+    -   A fully client-side job source tracker. It allows users to manage multiple career sites and scan them for new listings. All source metadata and job "hits" are stored in `localStorage` (`applyer_sources`).
+3.  **Privacy Guard (`/lib/utils/privacy.ts`)**:
     -   A client-side interceptor that masks PII (Personally Identifiable Information) before LLM transmission and unmasks it for local display/PDF generation.
-3.  **Modular Workspace (`/app/application-assistant`)**:
-    -   **Build**: Generative dashboard for resumes, cover letters, and Q&A.
-    -   **Profile**: Dual-pane Markdown editor with Monaco and live sanitized preview.
+4.  **Document Extraction Engine**:
+    -   Uses a serverless-optimized `pdf-parse` (v2.4.5) implementation to extract raw text from resumes for profile auto-population without storing files.
+5.  **Modular Workspace**:
+    -   **Assistant**: Generative dashboard for resumes, cover letters, and Q&A.
+    -   **Profile Editor**: Structured form and resume parser for building the core markdown profile.
     -   **Settings**: Secure management of API keys and PII masking configurations.
-4.  **Content Protection**:
+6.  **Content Protection**:
     -   Strict **Content Security Policy (CSP)** and **DOMPurify** sanitization to prevent XSS-based key theft.
 
 ## Core Data Flow
@@ -40,4 +44,4 @@ The interface follows an **Editorial/Magazine** aesthetic:
 -   **Interaction**: Minimalist sidebar navigation with high-contrast active states.
 
 ---
-*Last Updated: 2026-04-20*
+*Last Updated: 2026-05-07*

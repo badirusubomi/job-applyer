@@ -3,6 +3,18 @@ import { getProvider, AIModelType } from '@/lib/ai/index';
 
 export async function POST(req: Request) {
   try {
+    // Polyfill DOMMatrix for pdfjs-dist (used by pdf-parse v2) in Node.js environment
+    if (typeof global.DOMMatrix === 'undefined') {
+      try {
+        const canvas = require('@napi-rs/canvas');
+        (global as any).DOMMatrix = canvas.DOMMatrix;
+        (global as any).DOMPoint = canvas.DOMPoint;
+        (global as any).DOMRect = canvas.DOMRect;
+      } catch (e) {
+        console.warn('Failed to polyfill DOMMatrix from @napi-rs/canvas:', e);
+      }
+    }
+
     // Load the library contextually
     const pdf = require('pdf-parse');
     const formData = await req.formData();
