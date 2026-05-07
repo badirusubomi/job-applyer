@@ -62,7 +62,10 @@ export default function SidebarNav() {
       >
         {/* Header */}
         <div className="h-16 flex items-center justify-between px-6 border-b-2 border-white/20 flex-shrink-0">
-          <h1 className="text-2xl font-black font-playfair tracking-tighter">APPLYER</h1>
+          <div className="flex items-center gap-3">
+            <img src="/logo.png" alt="Applyer Logo" className="w-8 h-8 object-contain" />
+            <h1 className="text-2xl font-black font-playfair tracking-tighter">APPLYER</h1>
+          </div>
           <button
             onClick={() => setIsOpen(false)}
             className="lg:hidden text-white/60 hover:text-white"

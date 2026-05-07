@@ -10,6 +10,25 @@ const plexMono = IBM_Plex_Mono({ weight: ['400', '500', '600', '700'], subsets: 
 export const metadata: Metadata = {
   title: 'Applyer',
   description: 'Local AI-powered job application automation',
+  openGraph: {
+    title: 'Applyer',
+    description: 'Local AI-powered job application automation',
+    url: 'https://applyer.app',
+    siteName: 'Applyer',
+    images: [
+      {
+        url: '/logo.png',
+        width: 800,
+        height: 800,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  icons: {
+    icon: '/logo.png',
+    apple: '/logo.png',
+  },
 };
 
 export default function RootLayout({
