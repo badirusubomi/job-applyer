@@ -328,7 +328,7 @@ function AssistantContent() {
                 </div>
               </div>
               <div>
-                <label className="block mb-1 font-bold uppercase tracking-wider text-xs">OpenAI Key (Optional)</label>
+                <label className="block mb-1 font-bold uppercase tracking-wider text-xs">OpenAI Key <span className="text-[#ff5e5b]">(Recommended)</span></label>
                 <input type="password" value={apiKeys.openai || ''} onChange={e => saveKeys({ ...apiKeys, openai: e.target.value })} className="w-full p-2 border-2 border-black focus:outline-none" />
               </div>
               <div>
@@ -444,7 +444,7 @@ function AssistantContent() {
                         className="appearance-none w-4 h-4 border-2 border-black checked:bg-black checked:border-black flex-shrink-0 disabled:bg-gray-300"
                       />
                       <span className="text-sm font-bold uppercase tracking-widest group-hover:bg-[#e8fc3b] px-1">
-                        {m === 'gemini' ? 'Gemini' : m === 'openai' ? 'OpenAI' : 'Local (Coming Soon)'}
+                        {m === 'gemini' ? 'Gemini' : m === 'openai' ? <span>OpenAI <span className="text-[#ff5e5b] text-[10px] ml-1">(Recommended)</span></span> : 'Local (Coming Soon)'}
                       </span>
                     </label>
                   ))}
@@ -477,7 +477,7 @@ function AssistantContent() {
                 <div className="font-mono">
                   <div>
                     <div className="flex justify-between items-center mb-1">
-                      <label className="block text-[10px] font-bold uppercase tracking-wider">OpenAI API Key</label>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider">OpenAI API Key <span className="text-[#ff5e5b]">(Recommended)</span></label>
                       <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-600 hover:underline">Get Key &rarr;</a>
                     </div>
                     <input type="password" value={apiKeys.openai || ''} onChange={e => saveKeys({ ...apiKeys, openai: e.target.value })} className="w-full p-2 border-4 border-black focus:outline-none focus:bg-[#e8fc3b]/10 text-xs" placeholder="sk-..." />
