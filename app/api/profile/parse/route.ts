@@ -1,3 +1,5 @@
+// Must be imported FIRST — pdfjs-dist references DOMMatrix at module load time
+import '@/lib/polyfills/dom-geometry';
 import { NextResponse } from 'next/server';
 import { getProvider, AIModelType } from '@/lib/ai/index';
 
