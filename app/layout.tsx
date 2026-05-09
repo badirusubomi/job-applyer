@@ -3,6 +3,7 @@ import { Playfair_Display, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import SidebarNav from './components/SidebarNav';
 import { ToastProvider } from './components/ToastProvider';
+import { Analytics } from "@vercel/analytics/next"
 
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
 const plexMono = IBM_Plex_Mono({ weight: ['400', '500', '600', '700'], subsets: ['latin'], variable: '--font-plex' });
@@ -45,6 +46,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <Analytics />
       <body className={`${plexMono.className} ${playfair.variable} bg-[#f4f4f0] text-black flex h-[100dvh] overflow-hidden antialiased`}>
         <ToastProvider>
           {/* Sidebar — hidden on mobile, visible on lg+ */}

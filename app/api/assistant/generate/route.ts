@@ -23,30 +23,23 @@ export async function POST(req: Request) {
     // Step 2: Match Profile
     const matchInfo = await aiProvider.matchProfile(profile, jobInfo);
 
-    let resume = '';
-    let coverLetter = '';
-    let answers = '';
-
-    // Step 3: Run requested actions
-    if (actions.resume) {
-      resume = await aiProvider.generateResume(profile, jobInfo, matchInfo);
-    }
+    // Step 3: Run requested actions concurrently
+    const resumeTask = actions.resume ? aiProvider.generateResume(profile, jobInfo, matchInfo) : Promise.resolve('');
+    const coverLetterTask = actions.coverLetter ? aiProvider.generateCoverLetter(profile, jobInfo, clTemplate) : Promise.resolve('');
     
-    if (actions.coverLetter) {
-      coverLetter = await aiProvider.generateCoverLetter(profile, jobInfo, clTemplate);
-    }
-
+    let answersTask = Promise.resolve('');
     if (actions.answers) {
-      // Use user-supplied questions if provided, otherwise fall back to generic ones
-      const questions: string[] = Array.isArray(rawQuestions) && rawQuestions.length > 0
+      const questionsToUse = Array.isArray(rawQuestions) && rawQuestions.length > 0
         ? rawQuestions
         : [
             "Why do you want this role?",
             "What makes you a strong fit for this position?",
             "Describe a technical challenge you solved and how."
           ];
-      answers = await aiProvider.generateAnswers(profile, jobInfo, questions);
+      answersTask = aiProvider.generateAnswers(profile, jobInfo, questionsToUse);
     }
+
+    const [resume, coverLetter, answers] = await Promise.all([resumeTask, coverLetterTask, answersTask]);
 
     return NextResponse.json({
       jobInfo,

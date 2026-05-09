@@ -116,6 +116,12 @@ Output a JSON object:
       "degree": "string",
       "date": "string"
     }
+  ],
+  "customSections": [
+    {
+      "title": "string",
+      "content": "string — formatting preserved"
+    }
   ]
 }
 

@@ -19,93 +19,103 @@
         }
         body {
             font-family: var(--primary-font), sans-serif;
-            line-height: 1.35;
+            line-height: 1.25;
             color: var(--black);
             margin: 0;
-            padding: 30px;
+            padding: 20px 30px;
             background: var(--white);
             font-size: 11pt;
         }
         .header {
-            border-bottom: 3px solid var(--black);
-            padding-bottom: 10px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         h1 {
             font-family: var(--primary-font);
             font-weight: 900;
-            font-size: 26pt;
-            margin: 0 0 5px 0;
-            text-transform: uppercase;
-            letter-spacing: -1px;
+            font-size: 21pt;
+            margin: 0 0 4px 0;
             line-height: 1;
         }
-        .contact {
-            text-transform: uppercase;
-            font-weight: bold;
-            font-size: 8pt;
-            letter-spacing: 0.5px;
+        .contact-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--black);
+            padding-bottom: 6px;
+            font-size: 10pt;
+        }
+        .contact-left, .contact-right {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .contact-right a {
+            color: inherit;
+            text-decoration: underline;
         }
         h2 {
             font-family: var(--primary-font);
             font-weight: bold;
-            font-size: 14pt;
-            margin: 15px 0 8px 0;
+            font-size: 12pt;
+            margin: 10px 0 6px 0;
             text-transform: uppercase;
-            border-bottom: 2px solid var(--black);
-            display: inline-block;
-            padding-right: 15px;
+            border-bottom: 1px solid var(--black);
+            display: block;
+            width: 100%;
+            padding-bottom: 2px;
         }
         .summary {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
+            text-align: justify;
         }
         .item {
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
         .item-header {
             display: flex;
             justify-content: space-between;
             align-items: baseline;
             font-weight: bold;
-            text-transform: uppercase;
             margin-bottom: 2px;
         }
         .item-title {
-            font-size: 10.5pt;
+            font-size: 11pt;
         }
         .item-tech {
+            font-size: 10.5pt;
             font-style: italic;
-            font-size: 10pt;
             margin-bottom: 2px;
             display: block;
+        }
+        .item-company {
+            font-weight: normal;
+            font-style: italic;
         }
         ul {
             margin: 2px 0 0 0;
-            padding-left: 15px;
+            padding-left: 18px;
         }
         li {
             margin-bottom: 2px;
+            text-align: justify;
         }
         .skill-group {
-            margin-bottom: 6px;
-        }
-        .skill-category-label {
-            display: block;
-            font-size: 7pt;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #444;
             margin-bottom: 4px;
         }
-        .skills-list {
-            font-family: inherit;
+        .skill-category-label {
+            font-weight: bold;
+            font-size: 10.5pt;
             display: inline;
         }
-        .skill-tag {
-            font-family: inherit;
+        .skill-category-label::after {
+            content: ": ";
+        }
+        .skills-list {
             display: inline;
-            font-size: 10pt;
-            font-weight: normal;
+            font-size: 10.5pt;
+        }
+        .skill-tag {
+            display: inline;
         }
         .skill-tag:not(:last-child)::after {
             content: ", ";
@@ -118,11 +128,16 @@
 <body>
     <div class="header">
         <h1>{{name}}</h1>
-        <div class="contact">
-            {{contact.email}} &bull; {{contact.phone}} &bull; {{contact.location}}
-            {{#contact.linkedin}} &bull; <a href="{{.}}" style="color: inherit; text-decoration: none;">LINKEDIN</a>{{/contact.linkedin}}
-            {{#contact.github}} &bull; <a href="{{.}}" style="color: inherit; text-decoration: none;">GITHUB</a>{{/contact.github}}
-            {{#contact.website}} &bull; <a href="{{.}}" style="color: inherit; text-decoration: none;">WEBSITE</a>{{/contact.website}}
+        <div class="contact-container">
+            <div class="contact-left">
+                {{contact.location}} &bull; {{contact.phone}} &bull; <a href="mailto:{{contact.email}}" style="color: inherit; text-decoration: underline;">{{contact.email}}</a>
+            </div>
+            <div class="contact-right">
+                {{#contact.linkedin}}<a target="_blank" rel="noopener noreferrer" href="{{.}}">linkedin</a>{{/contact.linkedin}}
+                {{#contact.github}} &bull; <a target="_blank" rel="noopener noreferrer" href="{{.}}">github</a>{{/contact.github}}
+                {{#contact.website}} &bull; <a target="_blank" rel="noopener noreferrer" href="{{.}}">website</a>{{/contact.website}}
+                {{#contact.portfolio}} &bull; <a target="_blank" rel="noopener noreferrer" href="{{.}}">portfolio</a>{{/contact.portfolio}}
+            </div>
         </div>
     </div>
 
@@ -155,7 +170,7 @@
         {{#experience}}
         <div class="item">
             <div class="item-header">
-                <span class="item-title">{{title}} // {{company}}</span>
+                <span class="item-title">{{title}} &mdash; <span class="item-company">{{company}}</span></span>
                 <span>{{startDate}} &ndash; {{endDate}}</span>
             </div>
             <ul>
@@ -206,13 +221,11 @@
     </section>
     {{/education.length}}
 
-    {{#customSections.length}}
     {{#customSections}}
     <section>
         <h2>{{title}}</h2>
         <div class="summary" style="white-space: pre-wrap;">{{content}}</div>
     </section>
     {{/customSections}}
-    {{/customSections.length}}
 </body>
 </html>

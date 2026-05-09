@@ -18,7 +18,7 @@ const FONTS = [
   { id: 'inter', name: 'Inter (Modern Sans)', family: "'Inter', sans-serif", importUrl: "https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap" },
   { id: 'playfair', name: 'Playfair Display (Editorial)', family: "'Playfair Display', serif", importUrl: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" },
   { id: 'garamond', name: 'EB Garamond (Elegant)', family: "'EB Garamond', serif", importUrl: "https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;700&display=swap" },
-  { id: 'jetbrains', name: 'JetBrains Mono (Technical)', family: "'JetBrains Mono', monospace", importUrl: "https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap" },
+  { id: 'calibri', name: 'Calibri (Standard Sans)', family: "Calibri, sans-serif", importUrl: "" },
 ];
 
 const DEFAULT_PROFILE = `# Sample Profile
@@ -69,7 +69,7 @@ function AssistantContent() {
   const [selectedModel, setSelectedModel] = useState<string>('openai');
   const [questions, setQuestions] = useState<string>('');
   const [actions, setActions] = useState({ resume: true, coverLetter: true, answers: true });
-  const [sectionVisibility, setSectionVisibility] = useState({ summary: true, experience: true, education: true, skills: true, projects: true, customSections: true });
+  const [sectionVisibility, setSectionVisibility] = useState<Record<string, boolean>>({ summary: true, experience: true, education: true, skills: true, projects: true });
 
   const [sidebarTab, setSidebarTab] = useState<'build' | 'settings'>('build');
   const [showOnboarding, setShowOnboarding] = useState(false);
@@ -190,7 +190,7 @@ function AssistantContent() {
       else if (unmaskedData.coverLetter && actions.coverLetter) setActiveTab('coverLetter');
       else if (unmaskedData.answers && actions.answers) setActiveTab('answers');
       setIsEditing(false);
-      setSectionVisibility({ summary: true, experience: true, education: true, skills: true, projects: true, customSections: true });
+      setSectionVisibility({ summary: true, experience: true, education: true, skills: true, projects: true });
       addToast("Generation successful!", "success");
     } catch (err: any) {
       console.error(err);
@@ -204,15 +204,19 @@ function AssistantContent() {
     if (!rawContent) return rawContent;
     const raw = typeof rawContent === 'string' ? JSON.parse(rawContent) : rawContent;
     const filtered = { ...raw };
-    if (!sectionVisibility.summary) delete filtered.summary;
-    if (!sectionVisibility.experience) filtered.experience = [];
-    if (!sectionVisibility.education) filtered.education = [];
-    if (!sectionVisibility.skills) {
+    if (sectionVisibility.summary === false) delete filtered.summary;
+    if (sectionVisibility.experience === false) filtered.experience = [];
+    if (sectionVisibility.education === false) filtered.education = [];
+    if (sectionVisibility.skills === false) {
       filtered.skills = [];
       filtered.skillCategories = [];
     }
-    if (!sectionVisibility.projects) filtered.projects = [];
-    if (!sectionVisibility.customSections) filtered.customSections = [];
+    if (sectionVisibility.projects === false) filtered.projects = [];
+    if (filtered.customSections && Array.isArray(filtered.customSections)) {
+      filtered.customSections = filtered.customSections.filter((sec: any) => {
+        return sectionVisibility[`custom_${sec.title}`] !== false;
+      });
+    }
     return filtered;
   };
 
@@ -423,7 +427,7 @@ function AssistantContent() {
                 disabled={loading || !jobDescription || (!actions.resume && !actions.coverLetter && !actions.answers)}
                 className="w-full py-4 bg-black text-white border-4 border-black font-bold uppercase tracking-widest flex justify-center items-center hover:bg-white hover:text-black transition-colors disabled:opacity-40"
               >
-                {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin stroke-[3]" /> Executing</> : <><Sparkles className="w-4 h-4 mr-2 stroke-[3]" /> Initialize</>}
+                {loading ? <><Loader2 className="w-4 h-4 mr-2 animate-spin stroke-[3]" /> Generating</> : <><Sparkles className="w-4 h-4 mr-2 stroke-[3]" /> Generate</>}
               </button>
             </>
           ) : (
@@ -600,17 +604,40 @@ function AssistantContent() {
                   </button>
                   {visibilityOpen && (
                     <div className="flex flex-wrap items-center gap-2 p-2 border-t-2 border-black/20">
-                      {['summary', 'experience', 'education', 'skills', 'projects', 'customSections'].map((sec) => (
-                        <label key={sec} className={`cursor-pointer px-3 py-1.5 border-2 border-black text-[10px] font-bold uppercase transition-colors ${sectionVisibility[sec as keyof typeof sectionVisibility] ? 'bg-black text-white hover:bg-black/80' : 'bg-[#f4f4f0] text-black/50 hover:bg-[#e8fc3b] hover:text-black'}`}>
+                      {['summary', 'experience', 'education', 'skills', 'projects'].map((sec) => (
+                        <label key={sec} className={`cursor-pointer px-3 py-1.5 border-2 border-black text-[10px] font-bold uppercase transition-colors ${sectionVisibility[sec] !== false ? 'bg-black text-white hover:bg-black/80' : 'bg-[#f4f4f0] text-black/50 hover:bg-[#e8fc3b] hover:text-black'}`}>
                           <input 
                             type="checkbox" 
                             className="hidden" 
-                            checked={sectionVisibility[sec as keyof typeof sectionVisibility]}
+                            checked={sectionVisibility[sec] !== false}
                             onChange={(e) => setSectionVisibility(prev => ({ ...prev, [sec]: e.target.checked }))}
                           />
-                          {sec === 'customSections' ? 'Custom' : sec.toUpperCase()}
+                          {sec.toUpperCase()}
                         </label>
                       ))}
+                      {/* Render individual custom sections */}
+                      {(() => {
+                        try {
+                          const resumeObj = typeof results?.resume === 'string' ? JSON.parse(results.resume) : results?.resume;
+                          return resumeObj?.customSections?.map((sec: any) => {
+                            const key = `custom_${sec.title}`;
+                            const isVisible = sectionVisibility[key] !== false;
+                            return (
+                              <label key={key} className={`cursor-pointer px-3 py-1.5 border-2 border-black text-[10px] font-bold uppercase transition-colors ${isVisible ? 'bg-black text-white hover:bg-black/80' : 'bg-[#f4f4f0] text-black/50 hover:bg-[#e8fc3b] hover:text-black'}`}>
+                                <input 
+                                  type="checkbox" 
+                                  className="hidden" 
+                                  checked={isVisible}
+                                  onChange={(e) => setSectionVisibility(prev => ({ ...prev, [key]: e.target.checked }))}
+                                />
+                                {sec.title.toUpperCase()}
+                              </label>
+                            );
+                          });
+                        } catch (e) {
+                          return null;
+                        }
+                      })()}
                     </div>
                   )}
                 </div>
