@@ -22,11 +22,19 @@ export async function POST(req: Request) {
       }
     }
 
-    const scrapedJobs = await scrapeJobs(url, expandedTerms);
-    
-    return NextResponse.json({ success: true, jobs: scrapedJobs });
+    const result = await scrapeJobs(url, expandedTerms);
+
+    if (result.blocked) {
+      return NextResponse.json(
+        { error: `This job board blocked the request (HTTP ${result.status}). Try a direct job listing URL (e.g. their Greenhouse or Lever page).` },
+        { status: 422 }
+      );
+    }
+
+    return NextResponse.json({ success: true, jobs: result.jobs });
   } catch (error: any) {
     console.error('Refresh error:', error);
     return NextResponse.json({ error: 'Failed to refresh source' }, { status: 500 });
   }
 }
+

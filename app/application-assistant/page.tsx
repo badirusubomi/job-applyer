@@ -88,7 +88,9 @@ function AssistantContent() {
     
     // Sync all persistence
     const savedSession = loadData(STORAGE_KEY, {});
+    
     if (savedSession.jobDescription) setJobDescription(urlParam || savedSession.jobDescription);
+
     if (savedSession.selectedModel) setSelectedModel(savedSession.selectedModel);
     if (savedSession.actions) setActions(savedSession.actions);
     if (savedSession.results) setResults(savedSession.results);

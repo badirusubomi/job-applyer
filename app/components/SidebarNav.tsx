@@ -2,11 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Activity, FileText, Briefcase, HelpCircle, Sparkles, Menu, X } from 'lucide-react';
+import { Activity, FileText, Briefcase, HelpCircle, Sparkles, Menu, X, Eye, EyeOff } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: Activity },
+  { href: '/home', label: 'Home', icon: Activity },
   { href: '/job-watcher', label: 'Job Watcher', icon: Briefcase },
   { href: '/profile-editor', label: 'Profile Editor', icon: FileText },
   { href: '/application-assistant', label: 'Assistant', icon: Sparkles },
@@ -15,6 +15,22 @@ const navItems = [
 export default function SidebarNav() {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isWelcomeHidden, setIsWelcomeHidden] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+    const hidden = localStorage.getItem('welcome_hidden') === 'true';
+    setIsWelcomeHidden(hidden);
+  }, []);
+
+  const toggleWelcomeVisibility = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newState = !isWelcomeHidden;
+    setIsWelcomeHidden(newState);
+    localStorage.setItem('welcome_hidden', newState.toString());
+  };
 
   // Close sidebar on route change (mobile)
   useEffect(() => {
@@ -30,6 +46,14 @@ export default function SidebarNav() {
     }
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
+
+  if (!mounted) return null;
+
+  const mainNavItems = isWelcomeHidden 
+    ? navItems.filter(item => item.href !== '/home')
+    : navItems;
+
+  const hiddenWelcomeItem = navItems.find(item => item.href === '/home');
 
   return (
     <>
@@ -77,20 +101,29 @@ export default function SidebarNav() {
 
         {/* Nav items */}
         <nav className="flex-1 p-4 space-y-2">
-          {navItems.map((item) => {
+          {mainNavItems.map((item) => {
             const isActive = pathname === item.href;
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex items-center px-4 py-3 transition-colors ${
+                className={`flex items-center group relative px-4 py-3 transition-colors ${
                   isActive 
                     ? 'bg-[#e8fc3b] text-black font-bold shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] border-2 border-black border-r-0 translate-x-1 outline-none' 
                     : 'hover:bg-white hover:text-black border-2 border-transparent'
                 }`}
               >
                 <item.icon className="w-5 h-5 mr-3" />
-                {item.label}
+                <span className="flex-1">{item.label}</span>
+                {item.href === '/home' && (
+                  <button 
+                    onClick={toggleWelcomeVisibility}
+                    className="opacity-0 group-hover:opacity-100 p-1 hover:bg-black/10 text-black transition-opacity"
+                    title="Hide Welcome Page"
+                  >
+                    <EyeOff className="w-3 h-3" />
+                  </button>
+                )}
               </Link>
             );
           })}
@@ -98,6 +131,23 @@ export default function SidebarNav() {
 
         {/* Footer — pinned to bottom via mt-auto */}
         <div className="p-4 border-t border-white/10 mt-auto space-y-2">
+          {isWelcomeHidden && hiddenWelcomeItem && (
+            <Link
+              href={hiddenWelcomeItem.href}
+              className={`flex items-center px-4 py-2 text-[10px] opacity-40 hover:opacity-100 transition-all border-2 border-dashed border-white/10 hover:border-[#e8fc3b] hover:text-[#e8fc3b] group ${pathname === hiddenWelcomeItem.href ? 'opacity-100 text-[#e8fc3b] border-[#e8fc3b]' : ''}`}
+            >
+              <hiddenWelcomeItem.icon className="w-3 h-3 mr-2" />
+              <span className="flex-1 uppercase font-bold tracking-[0.2em]">{hiddenWelcomeItem.label}</span>
+              <button 
+                onClick={toggleWelcomeVisibility}
+                className="p-1 hover:bg-white/10 text-white transition-opacity"
+                title="Unhide Welcome Page"
+              >
+                <Eye className="w-3 h-3" />
+              </button>
+            </Link>
+          )}
+
           <a 
             href='https://ko-fi.com/B0B81Z4K3J' 
             target='_blank' 
