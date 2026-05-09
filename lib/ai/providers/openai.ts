@@ -81,7 +81,10 @@ Output a JSON object:
   "contact": {
     "email": "string",
     "phone": "string",
-    "location": "string"
+    "location": "string",
+    "linkedin": "string (optional URL)",
+    "github": "string (optional URL)",
+    "website": "string (optional URL)"
   },
   "summary": "string — 2–3 sentences. Targeted to ${jobInfo.role}. Don't open with 'I am'. Make it punchy and specific.",
   "skillCategories": [
@@ -103,6 +106,7 @@ Output a JSON object:
     {
       "name": "string",
       "tech": "string",
+      "link": "string (optional URL)",
       "bullets": ["string"]
     }
   ],
@@ -240,6 +244,8 @@ Return ONLY a JSON object with this exact structure:
   "email": "string",
   "phone": "string",
   "location": "string",
+  "linkedin": "string",
+  "github": "string",
   "summary": "string",
   "experience": [{ "title": "string", "company": "string", "startDate": "string", "endDate": "string", "bullets": "string (all bullets combined with newlines)" }],
   "skills": [{ "category": "string", "skills": "string (comma separated list)" }],

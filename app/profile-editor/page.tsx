@@ -10,6 +10,9 @@ export default function ProfileEditor() {
     email: '',
     phone: '',
     location: '',
+    linkedin: '',
+    github: '',
+    portfolio: '',
     summary: '',
     experience: [] as { title: string; company: string; startDate: string; endDate: string; bullets: string }[],
     skills: [] as { category: string; skills: string }[],
@@ -59,6 +62,9 @@ export default function ProfileEditor() {
         email: data.email || prev.email,
         phone: data.phone || prev.phone,
         location: data.location || prev.location,
+        linkedin: data.linkedin || prev.linkedin || '',
+        github: data.github || prev.github || '',
+        portfolio: data.portfolio || prev.portfolio || '',
         summary: data.summary || prev.summary,
         experience: data.experience?.length ? data.experience : prev.experience,
         skills: data.skills?.length ? data.skills : prev.skills,
@@ -90,7 +96,10 @@ export default function ProfileEditor() {
           name: p.name || '',
           email: p.email || '',
           phone: p.phone || '',
-          location: p.address || ''
+          location: p.address || '',
+          linkedin: p.linkedin || '',
+          github: p.github || '',
+          portfolio: p.portfolio || ''
         }));
       }
     }
@@ -104,8 +113,16 @@ export default function ProfileEditor() {
 
     // Compile to Markdown for the AI Assistant
     let markdown = `# ${profile.name || 'Candidate Profile'}\n\n`;
-    if (profile.email || profile.phone || profile.location) {
-      markdown += `**Contact**: ${[profile.email, profile.phone, profile.location].filter(Boolean).join(' | ')}\n\n`;
+    if (profile.email || profile.phone || profile.location || profile.linkedin || profile.github || profile.portfolio) {
+      const contactInfo = [
+        profile.email,
+        profile.phone,
+        profile.location,
+        profile.linkedin ? `LinkedIn: ${profile.linkedin}` : null,
+        profile.github ? `GitHub: ${profile.github}` : null,
+        profile.portfolio ? `Portfolio: ${profile.portfolio}` : null
+      ].filter(Boolean).join(' | ');
+      markdown += `**Contact**: ${contactInfo}\n\n`;
     }
     if (profile.summary) {
       markdown += `## Summary\n${profile.summary}\n\n`;
@@ -209,6 +226,18 @@ export default function ProfileEditor() {
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider mb-1">Location</label>
                 <input type="text" value={profile.location} onChange={e => setProfile({...profile, location: e.target.value})} className="w-full p-2 border-2 border-black bg-white text-black placeholder:text-black/40" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1">LinkedIn URL</label>
+                <input type="text" value={profile.linkedin} onChange={e => setProfile({...profile, linkedin: e.target.value})} className="w-full p-2 border-2 border-black bg-white text-black placeholder:text-black/40" placeholder="linkedin.com/in/..." />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1">GitHub URL</label>
+                <input type="text" value={profile.github} onChange={e => setProfile({...profile, github: e.target.value})} className="w-full p-2 border-2 border-black bg-white text-black placeholder:text-black/40" placeholder="github.com/..." />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider mb-1">Portfolio URL</label>
+                <input type="text" value={profile.portfolio} onChange={e => setProfile({...profile, portfolio: e.target.value})} className="w-full p-2 border-2 border-black bg-white text-black placeholder:text-black/40" placeholder="yourportfolio.com" />
               </div>
             </div>
           </section>

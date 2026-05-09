@@ -8,6 +8,9 @@ export interface PrivacyConfig {
   email?: string;
   phone?: string;
   address?: string;
+  linkedin?: string;
+  github?: string;
+  portfolio?: string;
 }
 
 const PLACEHOLDERS = {
@@ -15,6 +18,9 @@ const PLACEHOLDERS = {
   email: '{{USER_EMAIL}}',
   phone: '{{USER_PHONE}}',
   address: '{{USER_ADDRESS}}',
+  linkedin: '{{USER_LINKEDIN}}',
+  github: '{{USER_GITHUB}}',
+  portfolio: '{{USER_PORTFOLIO}}',
 };
 
 /**
@@ -36,6 +42,15 @@ export function maskPii(text: string, config: PrivacyConfig): string {
   if (config.address) {
     masked = masked.replaceAll(config.address, PLACEHOLDERS.address);
   }
+  if (config.linkedin) {
+    masked = masked.replaceAll(config.linkedin, PLACEHOLDERS.linkedin);
+  }
+  if (config.github) {
+    masked = masked.replaceAll(config.github, PLACEHOLDERS.github);
+  }
+  if (config.portfolio) {
+    masked = masked.replaceAll(config.portfolio, PLACEHOLDERS.portfolio);
+  }
 
   return masked;
 }
@@ -50,6 +65,9 @@ export function unmaskPii(data: any, config: PrivacyConfig): any {
     if (config.email) unmasked = unmasked.replaceAll(PLACEHOLDERS.email, config.email);
     if (config.phone) unmasked = unmasked.replaceAll(PLACEHOLDERS.phone, config.phone);
     if (config.address) unmasked = unmasked.replaceAll(PLACEHOLDERS.address, config.address);
+    if (config.linkedin) unmasked = unmasked.replaceAll(PLACEHOLDERS.linkedin, config.linkedin);
+    if (config.github) unmasked = unmasked.replaceAll(PLACEHOLDERS.github, config.github);
+    if (config.portfolio) unmasked = unmasked.replaceAll(PLACEHOLDERS.portfolio, config.portfolio);
     return unmasked;
   }
 

@@ -518,6 +518,18 @@ function AssistantContent() {
                     <label className="block text-[10px] font-bold uppercase tracking-wider mb-1">Address</label>
                     <input type="text" value={privacy.address || ''} onChange={e => savePrivacy({ ...privacy, address: e.target.value })} className="w-full p-2 border-4 border-black text-xs" placeholder="e.g. New York, NY" />
                   </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider mb-1">LinkedIn Mask</label>
+                    <input type="text" value={privacy.linkedin || ''} onChange={e => savePrivacy({ ...privacy, linkedin: e.target.value })} className="w-full p-2 border-4 border-black text-xs" placeholder="linkedin.com/..." />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider mb-1">GitHub Mask</label>
+                    <input type="text" value={privacy.github || ''} onChange={e => savePrivacy({ ...privacy, github: e.target.value })} className="w-full p-2 border-4 border-black text-xs" placeholder="github.com/..." />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold uppercase tracking-wider mb-1">Portfolio Mask</label>
+                    <input type="text" value={privacy.portfolio || ''} onChange={e => savePrivacy({ ...privacy, portfolio: e.target.value })} className="w-full p-2 border-4 border-black text-xs" placeholder="yourportfolio.com" />
+                  </div>
                 </div>
               </div>
 
