@@ -15,10 +15,13 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['pdf-parse', 'pdfjs-dist', 'playwright', 'playwright-core'],
+  serverExternalPackages: ['pdf-parse', 'pdfjs-dist', 'playwright', 'playwright-core', '@sparticuz/chromium'],
   outputFileTracingIncludes: {
     '/api/profile/parse': ['./node_modules/pdfjs-dist/legacy/build/**/*'],
-    '/api/pdf': ['./node_modules/playwright-core/browsers.json'],
+    '/api/pdf': [
+      './node_modules/playwright-core/browsers.json',
+      './node_modules/@sparticuz/chromium/bin/**/*'
+    ],
   },
   async headers() {
     return [
