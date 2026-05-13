@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "postbuild": "npx playwright install chromium"
   },
   "dependencies": {
     "@google/genai": "^1.48.0",
