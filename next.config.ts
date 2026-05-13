@@ -15,7 +15,7 @@ const cspHeader = `
 `;
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['pdf-parse', 'pdfjs-dist'],
+  serverExternalPackages: ['pdf-parse', 'pdfjs-dist', 'playwright', 'playwright-core'],
   outputFileTracingIncludes: {
     '/api/profile/parse': ['./node_modules/pdfjs-dist/legacy/build/**/*'],
   },
