@@ -1,7 +1,8 @@
-import { chromium } from 'playwright';
-
 export async function generatePDF(html: string): Promise<Buffer> {
   // Use Playwright since it is already configured in our Docker environment
+  // Dynamically import to bypass Turbopack's /var/task virtual path bug
+  const { chromium } = await import('playwright');
+  
   const browser = await chromium.launch({
     headless: true,
   });

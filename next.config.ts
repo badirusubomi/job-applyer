@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
   serverExternalPackages: ['pdf-parse', 'pdfjs-dist', 'playwright', 'playwright-core'],
   outputFileTracingIncludes: {
     '/api/profile/parse': ['./node_modules/pdfjs-dist/legacy/build/**/*'],
+    '/api/pdf': ['./node_modules/playwright-core/browsers.json'],
   },
   async headers() {
     return [
