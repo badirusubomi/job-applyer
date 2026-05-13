@@ -1,11 +1,24 @@
 export async function generatePDF(html: string): Promise<Buffer> {
-  // Use Playwright since it is already configured in our Docker environment
-  // Dynamically import to bypass Turbopack's /var/task virtual path bug
-  const { chromium } = await import('playwright');
-  
-  const browser = await chromium.launch({
-    headless: true,
-  });
+  const isProduction = process.env.NODE_ENV === 'production';
+  let browser;
+
+  if (isProduction) {
+    // Vercel Serverless environment
+    const chromium = (await import('@sparticuz/chromium')).default;
+    const playwright = await import('playwright-core');
+    
+    browser = await playwright.chromium.launch({
+      args: chromium.args,
+      executablePath: await chromium.executablePath(),
+      headless: true,
+    });
+  } else {
+    // Local environment (Docker or Turbopack)
+    const { chromium } = await import('playwright');
+    browser = await chromium.launch({
+      headless: true,
+    });
+  }
   const page = await browser.newPage();
 
   // Set HTML content and wait for it to be fully rendered
