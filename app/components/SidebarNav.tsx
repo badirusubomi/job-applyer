@@ -17,11 +17,17 @@ export default function SidebarNav() {
   const [isOpen, setIsOpen] = useState(false);
   const [isWelcomeHidden, setIsWelcomeHidden] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isOnboardingComplete, setIsOnboardingComplete] = useState(true); // default true to avoid flicker if SSR, but we handle mounted
 
   useEffect(() => {
     setMounted(true);
     const hidden = localStorage.getItem('welcome_hidden') === 'true';
     setIsWelcomeHidden(hidden);
+    setIsOnboardingComplete(localStorage.getItem('applyer_onboarding_complete') === 'true');
+
+    const handleOnboardingComplete = () => setIsOnboardingComplete(true);
+    window.addEventListener('applyer_onboarding_complete', handleOnboardingComplete);
+    return () => window.removeEventListener('applyer_onboarding_complete', handleOnboardingComplete);
   }, []);
 
   const toggleWelcomeVisibility = (e: React.MouseEvent) => {
@@ -49,9 +55,13 @@ export default function SidebarNav() {
 
   if (!mounted) return null;
 
-  const mainNavItems = isWelcomeHidden 
-    ? navItems.filter(item => item.href !== '/home')
-    : navItems;
+  let mainNavItems = navItems;
+  if (!isOnboardingComplete) {
+    // Only show home when onboarding is incomplete
+    mainNavItems = navItems.filter(item => item.href === '/home');
+  } else if (isWelcomeHidden) {
+    mainNavItems = navItems.filter(item => item.href !== '/home');
+  }
 
   const hiddenWelcomeItem = navItems.find(item => item.href === '/home');
 

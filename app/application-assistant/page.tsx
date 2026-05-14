@@ -54,6 +54,7 @@ function loadData(key: string, defaultVal: any = null) {
 function AssistantContent() {
   const searchParams = useSearchParams();
   const urlParam = searchParams.get('url');
+  const tabParam = searchParams.get('tab');
 
   // Hydration safety
   const [mounted, setMounted] = useState(false);
@@ -83,6 +84,12 @@ function AssistantContent() {
   const [visibilityOpen, setVisibilityOpen] = useState(false);
 
   // LOAD FROM LOCALSTORAGE AFTER MOUNT
+  useEffect(() => {
+    if (tabParam === 'settings' || tabParam === 'build') {
+      setSidebarTab(tabParam);
+    }
+  }, [tabParam]);
+
   useEffect(() => {
     setMounted(true);
     
@@ -359,7 +366,7 @@ function AssistantContent() {
           <FileText className="w-5 h-5 lg:w-6 lg:h-6 stroke-[2]" />
           <span className="text-[9px] lg:text-[10px] font-bold font-mono uppercase mt-1 lg:mt-2">Build</span>
         </button>
-        <button onClick={() => setSidebarTab('settings')} className={`flex-1 flex flex-col items-center justify-center p-3 lg:p-4 border-black transition-colors ${sidebarTab === 'settings' ? 'bg-[#ff5e5b] text-white' : 'hover:bg-[#f4f4f0]'}`}>
+        <button onClick={() => setSidebarTab('settings')} className={`flex-1 flex flex-col items-center justify-center p-3 lg:p-4 border-black transition-colors ${sidebarTab === 'settings' ? 'bg-[#e8fc3b]' : 'hover:bg-[#f4f4f0]'}`}>
           <SettingsIcon className="w-5 h-5 lg:w-6 lg:h-6 stroke-[2]" />
           <span className="text-[9px] lg:text-[10px] font-bold font-mono uppercase mt-1 lg:mt-2">Options</span>
         </button>

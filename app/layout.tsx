@@ -3,6 +3,7 @@ import { Playfair_Display, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 import SidebarNav from './components/SidebarNav';
 import { ToastProvider } from './components/ToastProvider';
+import OnboardingGuard from './components/OnboardingGuard';
 import { Analytics } from "@vercel/analytics/next"
 
 const playfair = Playfair_Display({ subsets: ['latin'], variable: '--font-playfair' });
@@ -49,13 +50,15 @@ export default function RootLayout({
       <Analytics />
       <body className={`${plexMono.className} ${playfair.variable} bg-[#f4f4f0] text-black flex h-[100dvh] overflow-hidden antialiased`}>
         <ToastProvider>
-          {/* Sidebar — hidden on mobile, visible on lg+ */}
-          <SidebarNav />
+          <OnboardingGuard>
+            {/* Sidebar — hidden on mobile, visible on lg+ */}
+            <SidebarNav />
 
-          {/* Main Content — full width on mobile, flex-1 on desktop */}
-          <main className="flex-1 flex flex-col overflow-hidden bg-[#e5e5df] w-full">
-            {children}
-          </main>
+            {/* Main Content — full width on mobile, flex-1 on desktop */}
+            <main className="flex-1 flex flex-col overflow-hidden bg-[#e5e5df] w-full">
+              {children}
+            </main>
+          </OnboardingGuard>
         </ToastProvider>
       </body>
     </html>

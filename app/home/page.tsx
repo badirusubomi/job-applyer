@@ -1,11 +1,36 @@
 'use client';
 
-import { Sparkles, Briefcase, FileText, CheckCircle2, ChevronRight, Zap, Target, Key } from 'lucide-react';
+import { Sparkles, Briefcase, FileText, CheckCircle2, ChevronRight, Zap, Target, Key, ArrowDown } from 'lucide-react';
 import Link from 'next/link';
+import { useState, useEffect, useRef } from 'react';
 
 export default function WelcomePage() {
+  const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!scrollContainerRef.current) return;
+      const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 50) {
+        setShowScrollIndicator(false);
+      } else {
+        setShowScrollIndicator(true);
+      }
+    };
+
+    const container = scrollContainerRef.current;
+    if (container) {
+      container.addEventListener('scroll', handleScroll);
+      handleScroll(); // Initial check
+    }
+    return () => {
+      if (container) container.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
+
   return (
-    <div className="flex-1 p-4 pt-16 lg:pt-8 lg:p-12 overflow-y-auto w-full text-black bg-[#f4f4f0]">
+    <div ref={scrollContainerRef} className="flex-1 p-4 pt-16 lg:pt-8 lg:p-12 overflow-y-auto w-full text-black bg-[#f4f4f0] relative">
       <div className="max-w-4xl">
         <header className="mb-12">
           <div className="flex items-center gap-2 mb-4">
@@ -20,6 +45,19 @@ export default function WelcomePage() {
           </p>
         </header>
 
+        <div className="mb-16">
+          <div className="border-4 border-black p-2 bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
+            <video 
+              src="/demo.mp4" 
+              autoPlay 
+              loop 
+              muted 
+              playsInline 
+              className="w-full aspect-video object-cover bg-black"
+            />
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
           {/* Step 1 */}
           <div className="bg-white border-4 border-black p-8 shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden group">
@@ -31,7 +69,7 @@ export default function WelcomePage() {
               <p className="font-mono text-xs leading-relaxed text-black/60 mb-8 uppercase font-bold">
                 Configure your API keys to enable neural drafting. We support OpenAI and Google Gemini for high-precision document synthesis.
               </p>
-              <Link href="/application-assistant" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-[#e8fc3b] px-4 py-2 border-2 border-black hover:bg-black hover:text-[#e8fc3b] transition-all">
+              <Link href="/application-assistant?tab=settings" className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest bg-[#e8fc3b] px-4 py-2 border-2 border-black hover:bg-black hover:text-[#e8fc3b] transition-all">
                 Configure Keys <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
@@ -108,6 +146,15 @@ export default function WelcomePage() {
             </div>
           </div>
         </section>
+      </div>
+
+      {/* Floating Scroll Indicator */}
+      <div 
+        className={`fixed bottom-8 right-8 z-50 transition-opacity duration-300 pointer-events-none ${showScrollIndicator ? 'opacity-100' : 'opacity-0'}`}
+      >
+        <div className="w-12 h-12 bg-black text-[#e8fc3b] rounded-full flex items-center justify-center border-2 border-black shadow-[4px_4px_0px_0px_rgba(232,252,59,1)] animate-bounce">
+          <ArrowDown className="w-6 h-6" />
+        </div>
       </div>
     </div>
   );

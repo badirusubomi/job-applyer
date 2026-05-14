@@ -20,6 +20,7 @@ This document tracks all known issues, resolved bugs, and architectural updates.
 | ✅ | 2026-04-20 | Global API key requirement. | `process.env` keys forced single-user mode. | Refactored providers to be stateless (BYOK). |
 | ✅ | 2026-04-07 | Skills not being followed by AI assistant. | Metadata triggers too generic. | Descriptions updated to include "MANDATORY BEHAVIORAL MANDATE". |
 | ✅ | 2026-04-07 | LLM Connection Refused/Not Found. | Container networking & missing model. | Fixed docker-compose internal URL and pulled llama3. |
+| ✅ | 2026-05-13 | Playwright module resolution & binary crash on Vercel deployment. | Turbopack sandboxing broke Playwright imports; Vercel Serverless environment size limit dropped Playwright Chromium binaries. | Implemented dynamic imports to bypass Turbopack sandboxing and swapped Playwright for `@sparticuz/chromium` with `serverExternalPackages` tracking in Vercel. |
 
 ---
-*Last Updated: 2026-04-20*
+*Last Updated: 2026-05-13*
